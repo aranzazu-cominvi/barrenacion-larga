@@ -1,0 +1,12 @@
+rules_version = '2';
+// Reglas de la base de datos de la app de barrenación larga.
+// Cualquiera con el enlace puede consultar y registrar avances, pero nadie puede
+// borrar ni modificar registros de la bitácora ni proyectos ya cargados.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /estado/{id}    { allow read, create, update: if true; allow delete: if false; }
+    match /bitacora/{id}  { allow read, create: if true;          allow update, delete: if false; }
+    match /proyectos/{id} { allow read, create: if true;          allow update, delete: if false; }
+    match /zonas/{id}     { allow read, create, update, delete: if true; }
+  }
+}

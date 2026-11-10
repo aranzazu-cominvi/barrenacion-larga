@@ -1,0 +1,9 @@
+{
+  "name": "Control de barrenación larga",
+  "short_name": "Barrenación",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#F2F4F3",
+  "theme_color": "#F07506",
+  "icons": [{"src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}]
+}

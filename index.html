@@ -1,0 +1,1686 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F07506">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Avance de barrenación larga</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F2F4F3; --surface:#FFFFFF; --sunk:#F4F6F5; --ink:#1A211F; --muted:#5B6661; --line:#D9DEDB;
+  --navy:#2A2E33; --brand:#F07506; --brand-d:#C65F00; --brand-l:#FDF0E4; --pend:#C2362B; --barr:#2B8247; --tumb:#2A5EBE; --unk:#B4BCB8;
+  --sel:#101614; --focus:#2A5EBE; --err:#B02A20;
+  --cond:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --nav-h:64px;
+  color-scheme:light;
+  box-sizing:border-box;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;font-variant-numeric:tabular-nums;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+input,select,textarea{font-size:16px}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+[hidden]{display:none!important}
+
+/* ---------- Estructura ---------- */
+.app{max-width:1380px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top,0px)) clamp(12px,3vw,32px) 48px;
+  display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:0 20px;
+  grid-template-areas:"top top" "dash dash" "tabs tabs" "zbar zbar" "av reg" "log log" "hist hist";align-items:start}
+.top{grid-area:top;display:flex;align-items:center;justify-content:space-between;gap:10px 20px;margin:-4px 0 16px;padding-bottom:14px;border-bottom:3px solid var(--brand);min-width:0}
+.brandbox{display:flex;align-items:center;gap:18px;min-width:0}
+.logo{display:block;height:52px;width:auto;flex-shrink:0}
+.miner{display:block;height:62px;width:auto;flex-shrink:0}
+.bsep{width:2px;align-self:stretch;background:var(--line)}
+.ttl{min-width:0}
+.kick{display:block;font-size:.85rem;font-weight:600;color:var(--brand-d)}
+.tabsbar{grid-area:tabs;display:flex;gap:8px;align-items:stretch;margin:0 0 18px;min-width:0}
+.zbar{grid-area:zbar}
+.v-dash{grid-area:dash;min-width:0}
+/* Tablero gerencial */
+.dash{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--navy);border-radius:6px;padding:16px;margin:0 0 18px}
+.dash .loghead{margin-bottom:12px}
+.dsub{font-size:.85rem;color:var(--muted);font-weight:500}
+.dk{display:grid;grid-template-columns:1.3fr repeat(6,minmax(0,1fr));gap:10px}
+.dkc{border:1px solid var(--line);border-radius:6px;padding:10px 12px 12px;min-width:0;border-top:3px solid var(--c,var(--navy))}
+.dkc .l{display:block;font-size:.8rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dkc b{display:block;font-family:var(--cond);font-weight:600;font-size:1.75rem;line-height:1.05;margin-top:2px;white-space:nowrap}
+.dkc b small{font-size:.55em;color:var(--muted);font-weight:500;margin-left:3px}
+.dkc .s{display:block;font-size:.76rem;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dkc.big{--c:var(--brand);background:var(--brand-l)}
+.dkc.big b{font-size:2.3rem;color:var(--brand-d)}
+.dbar{display:flex;height:8px;border-radius:2px;overflow:hidden;background:var(--pend);margin-top:8px}
+.dbar i{display:block;height:100%}
+.dmid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}
+.dst{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:6px;padding:8px 12px;font-size:.88rem}
+.dst b{font-family:var(--cond);font-size:1.6rem;line-height:1}
+.dst i{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.dper{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.88rem;color:var(--muted);margin:0 0 12px;padding:8px 12px;background:var(--sunk);border-radius:6px}
+.dper b{color:var(--ink);font-weight:600}
+.dtab{border:1px solid var(--line);border-radius:6px;overflow:auto}
+.drow{display:grid;grid-template-columns:52px minmax(130px,1.1fr) 128px minmax(150px,1.4fr) minmax(130px,1.1fr) repeat(4,minmax(80px,.7fr));gap:8px;align-items:center;padding:8px 12px;border-top:1px solid var(--line);font-size:.88rem;min-width:980px;width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;cursor:pointer;color:inherit}
+.drow:first-child{border-top:0}
+.drow:hover:not(.dh):not(.dtot){background:var(--brand-l)}
+.drow.dh{background:var(--sunk);font-size:.74rem;font-weight:600;color:var(--muted);cursor:default}
+.drow.dtot{background:var(--brand-l);font-weight:700;cursor:default}
+.drow .n{font-weight:600}
+.drow .num{text-align:right}
+.drow .pb{display:flex;align-items:center;gap:8px}
+.drow .pb .dbar{flex:1;margin:0}
+.dbar.tb{background:#DCE3EE}
+.drow .pb span{width:56px;flex-shrink:0;text-align:right;font-weight:600;padding-right:6px}
+.badge{font-style:normal;display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.s-ini{background:#ECEEF0;color:#5B6661} .s-bar{background:#FDEBDC;color:#B05400} .s-lis{background:#DDF0E3;color:#1E6B39} .s-tum{background:#E0E8F7;color:#24519F}
+.v-hist{grid-area:hist;min-width:0}
+.v-av{grid-area:av;min-width:0}
+.v-reg{grid-area:reg;min-width:0;position:relative;z-index:1}
+.v-log{grid-area:log;min-width:0}
+
+h1{font-family:var(--cond);font-weight:700;font-size:clamp(1.6rem,4.6vw,3.2rem);line-height:.95;margin:0;color:var(--navy);min-width:0;overflow-wrap:anywhere}
+h2{font-family:var(--cond);font-weight:600;font-size:1.4rem;margin:0 0 10px;line-height:1.1}
+.tright{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.sync{display:inline-flex;align-items:center;gap:7px;font-size:.82rem;color:var(--muted);padding:6px 11px;border:1px solid var(--line);border-radius:999px;background:var(--surface);white-space:nowrap}
+.sync::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--unk)}
+.sync.online::before{background:var(--barr)}
+.sync.local::before,.sync.error::before{background:var(--pend)}
+.sync.ro::before{background:var(--tumb)}
+.edbtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:.84rem;font-weight:600;color:var(--muted);cursor:pointer}
+.edbtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.edbtn.on{border-color:var(--brand);background:var(--brand-l);color:var(--brand-d)}
+.ekt{display:flex;flex-direction:column;gap:10px}
+.ekt button{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 14px;font-weight:600;cursor:pointer;text-align:left}
+.ekmsg{font-size:.88rem;color:var(--muted);margin:0;min-height:1.2em}
+.who{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px 4px 4px;cursor:pointer;max-width:230px}
+.who .av{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--brand);color:#fff;font-weight:600;font-size:.8rem;flex-shrink:0}
+.who .nm{font-weight:600;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Pestañas de rebaje */
+.tabs{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin:0;flex:1;min-width:0}
+.notabs{margin:0;padding:14px;border:2px dashed var(--line);border-radius:6px;color:var(--muted)}
+.npbtn{border:2px dashed var(--brand);background:var(--surface);color:var(--brand-d);border-radius:6px;padding:8px 14px;font-weight:700;cursor:pointer;min-height:74px}
+.npbtn:hover{background:#fbe2cc}
+.bhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.bhead h2{margin:0}
+.bbtns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.rptbtn{border:1px solid var(--brand);background:var(--brand-d);color:#fff;border-radius:6px;padding:6px 12px;font-weight:600;font-size:.86rem;cursor:pointer}
+.rptbtn:disabled{opacity:.6;cursor:progress}
+.closez{border:1px solid color-mix(in srgb,var(--err) 40%,var(--line));background:var(--surface);color:var(--err);border-radius:6px;padding:6px 12px;font-weight:600;font-size:.86rem;cursor:pointer}
+.zbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin:0 0 16px;padding:12px 16px;border-radius:6px;background:#EEF2F7;border:1px solid #C9D3E1;border-left:5px solid var(--tumb)}
+.zbar.z-finalizado{border-left-color:var(--barr);background:#EDF6F0;border-color:#C7E1CF}
+.zbar b{display:block;font-weight:700}
+.zbar span{font-size:.9rem;color:var(--muted)}
+.zbtns{display:flex;gap:8px;flex-wrap:wrap}
+.zbtns button,.zc4 button{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:7px 12px;font-weight:600;font-size:.86rem;cursor:pointer}
+.zre{border-color:var(--brand)!important;color:var(--brand-d)}
+.zb{display:inline-block;font-style:normal;font-size:.74rem;font-weight:700;padding:1px 8px;border-radius:999px;margin-left:6px;vertical-align:1px}
+.zb.z-finalizado{background:#DDF0E3;color:#1E6B39}
+.zb.z-archivado{background:#E6E9EE;color:#4B5563}
+.hist{margin-top:24px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px}
+.hist h3{font-family:var(--cond);font-weight:600;font-size:1.15rem;margin:18px 0 8px}
+.htab{border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.hrow{display:grid;grid-template-columns:minmax(0,1.6fr) repeat(4,minmax(0,1fr));gap:8px;padding:9px 12px;border-top:1px solid var(--line);align-items:center;font-size:.92rem}
+.hrow:first-child{border-top:0}
+.hhead{background:var(--sunk);font-size:.78rem;font-weight:600;color:var(--muted)}
+.htot{font-weight:700;background:var(--brand-l)}
+.hrow .lnk{border:0;background:none;padding:0;color:var(--tumb);font-weight:600;cursor:pointer;text-align:left;text-transform:capitalize}
+.zlist{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.zcard{border:1px solid var(--line);border-left:5px solid #9AA3AE;border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.zcard.z-finalizado{border-left-color:var(--barr)}
+.zc1{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.zc1 b{font-family:var(--cond);font-size:1.15rem}
+.zc2{font-size:.85rem;color:var(--muted)}
+.zc2 p{margin:2px 0 0}
+.zc3{display:flex;flex-direction:column;font-size:.88rem}
+.zc3 b{font-weight:700}
+.zc4{display:flex;gap:8px;margin-top:2px}
+.npd{width:min(980px,calc(100% - 24px))}
+.npd .dlg{max-height:calc(100vh - 40px);overflow:auto}
+.npfile{display:block;width:100%;padding:18px;border:2px dashed var(--line);border-radius:8px;background:var(--sunk);font-weight:400}
+.npst{margin:10px 0;padding:10px 12px;border-radius:6px;background:var(--sunk);font-size:.9rem}
+.npst.err{background:#FBEAEA;color:var(--err)}
+.npbar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:8px}
+.npbar i{display:block;height:100%;width:0;background:var(--brand);transition:width .3s}
+.npgrid{display:grid;grid-template-columns:120px minmax(0,1fr) minmax(0,1fr);gap:10px}
+.nptab{margin-top:12px;border:1px solid var(--line);border-radius:6px;overflow:auto;max-height:52vh}
+.nprow{display:grid;grid-template-columns:80px 60px 80px 80px 96px minmax(260px,1fr) 30px;gap:8px;align-items:center;padding:6px 10px;border-top:1px solid var(--line);font-size:.86rem;min-width:820px}
+.nprow:first-child{border-top:0;background:var(--sunk);font-weight:600;font-size:.76rem;color:var(--muted);position:sticky;top:0}
+.nprow input{width:100%;margin:0!important;padding:6px 8px!important;font-size:.86rem!important}
+.nprow .ok{color:var(--barr);font-weight:700}
+.nprow .bad{color:var(--err);font-weight:700}
+.nprow .rm{border:0;background:none;color:var(--err);font-size:1.1rem;cursor:pointer}
+.npsum{margin:10px 0 0;font-size:.9rem}
+.tab{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:9px 12px 11px;border:2px solid var(--line);background:var(--surface);border-radius:6px;cursor:pointer;min-width:0}
+.tab:hover{border-color:var(--brand)}
+.tab .tp{font-size:.8rem;color:var(--muted)}
+.tab .tn{font-family:var(--cond);font-weight:700;font-size:1.1rem;line-height:1.1;color:var(--navy);max-width:100%;overflow-wrap:anywhere}
+.tab .tpct{font-size:.84rem;color:var(--muted)}
+.tab .tbar{display:flex;width:100%;height:6px;margin-top:6px;background:var(--unk);border-radius:2px;overflow:hidden}
+.tab .tbar i{display:block;height:100%}
+.tab[aria-selected="true"]{background:var(--brand-l);border-color:var(--brand);box-shadow:inset 0 4px 0 var(--brand)}
+.tab[aria-selected="true"] .tn{color:var(--navy)}
+.tab[aria-selected="true"] .tp,.tab[aria-selected="true"] .tpct{color:var(--brand-d);font-weight:600}
+
+/* Indicadores */
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.kpi{padding:14px 14px 16px;border-top:3px solid var(--c,var(--navy));min-width:0}
+.kpi+.kpi{border-left:1px solid var(--line)}
+.kpi .lab{display:block;font-weight:500;font-size:.84rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi strong{display:block;font-family:var(--cond);font-weight:600;font-size:clamp(1.5rem,2.1vw,2.2rem);line-height:1.05;margin-top:4px;white-space:nowrap}
+.kpi strong small{font-size:.55em;font-weight:500;margin-left:4px;color:var(--muted)}
+.k-mb{--c:var(--barr)} .k-mp{--c:var(--pend)} .k-hb{--c:var(--barr)} .k-ht{--c:var(--tumb)} .k-tb{--c:var(--navy)} .k-tt{--c:var(--tumb)}
+.overall{margin:14px 0 6px}
+.bar{display:flex;height:14px;background:var(--unk);overflow:hidden;border-radius:3px}
+.bar span{height:100%;transition:width .4s ease}
+.bar .t{background:var(--tumb)} .bar .b{background:var(--barr)} .bar .p{background:var(--pend)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:8px;font-size:.86rem;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.today{margin:4px 0 18px;font-size:.92rem}
+.today b{font-weight:600}
+
+/* Tabla de secciones (escritorio) */
+.board{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px 16px 12px;min-width:0}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.grid{min-width:760px}
+.row{display:grid;grid-template-columns:78px 66px 54px 46px minmax(0,1fr) 74px 74px;align-items:center;gap:0 8px;padding:4px 0;border-bottom:1px solid var(--line)}
+.row.head{font-size:.78rem;color:var(--muted);font-weight:600;border-bottom:2px solid var(--ink);padding-bottom:6px}
+.row.total{border-bottom:0;border-top:2px solid var(--ink);font-weight:600;padding-top:8px}
+.num{text-align:right}
+.sec{border:0;background:none;padding:4px 2px;text-align:left;font-family:var(--cond);font-weight:600;font-size:1.02rem;cursor:pointer;border-radius:2px}
+.sec:hover{text-decoration:underline}
+.holes{display:grid;grid-auto-flow:column;grid-auto-columns:24px;justify-content:start;gap:2px;height:28px}
+.hole{border:0;padding:0;min-width:0;border-radius:3px;color:#fff;font-family:var(--cond);font-weight:600;font-size:.8rem;cursor:pointer;overflow:hidden;white-space:nowrap}
+.st-P{background:var(--pend)} .st-B{background:var(--barr)} .st-T{background:var(--tumb)} .st-U{background:var(--unk);cursor:progress}
+.st-X{background:repeating-linear-gradient(135deg,#C9CFCC 0 4px,#E3E7E5 4px 8px);color:#5B6661;cursor:not-allowed}
+.nbrow .sec,.nbrow .sn,.nbrow .num{color:var(--muted)}
+.nbrow .sec{cursor:default;text-decoration:none!important}
+.nbtag{grid-column:span 2;text-align:right;font-size:.8rem;font-weight:600;color:var(--muted)}
+.srow.nbrow{cursor:default}
+.hole[aria-pressed="true"]{outline:3px solid var(--sel);outline-offset:-3px;box-shadow:inset 0 0 0 5px rgba(255,255,255,.55)}
+.hole:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.minibar{display:flex;height:8px;border-radius:2px;overflow:hidden;background:var(--unk)}
+.est{margin:8px 0 0;font-size:.85rem;color:var(--pend)}
+
+/* Lista de secciones (teléfono) */
+.slist{display:none}
+.srow{display:grid;grid-template-columns:72px minmax(0,1fr) auto;align-items:center;gap:12px;width:100%;padding:12px 14px;border:0;border-bottom:1px solid var(--line);background:none;text-align:left;cursor:pointer}
+.srow:last-child{border-bottom:0}
+.srow .sn{font-family:var(--cond);font-weight:600;font-size:1.08rem}
+.srow .sb{display:grid;grid-auto-flow:column;grid-auto-columns:7px;justify-content:start;gap:2px;height:14px;overflow:hidden}
+.srow .sb i{display:block;border-radius:2px}
+.srow .sm{text-align:right;font-size:.88rem;line-height:1.25;white-space:nowrap}
+.srow .sm b{display:block;font-weight:600}
+.srow .sm small{color:var(--muted);font-size:.8rem}
+
+/* Registro */
+.panel{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--brand);border-radius:6px;padding:16px}
+.panel label{display:block;font-weight:600;font-size:.86rem;margin-bottom:12px}
+.panel input,.panel select,.panel textarea{display:block;width:100%;margin-top:4px;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--sunk);font-weight:400}
+.panel textarea{resize:vertical;min-height:58px}
+.regby{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:-2px 0 14px;font-size:.9rem;color:var(--muted)}
+.regby b{color:var(--ink);font-weight:600}
+.regby button{border:0;background:none;color:var(--tumb);font-weight:600;cursor:pointer;padding:4px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+fieldset{border:0;padding:0;margin:0 0 12px;min-width:0}
+legend{font-weight:600;font-size:.86rem;padding:0;margin-bottom:6px}
+.acts{display:grid;grid-template-columns:repeat(var(--n,3),1fr);gap:6px}
+.act{margin:0!important;position:relative}
+.act input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.act span{display:flex;align-items:center;justify-content:center;text-align:center;min-height:46px;padding:4px 6px;border:2px solid var(--c);color:var(--c);border-radius:6px;font-weight:600;font-size:.88rem;line-height:1.15}
+.act input:checked+span{background:var(--c);color:#fff}
+.act input:focus-visible+span{outline:2px solid var(--focus);outline-offset:2px}
+.a-B{--c:var(--barr)} .a-T{--c:var(--tumb)} .a-P{--c:var(--pend)}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:-4px 0 10px}
+.quick button{border:1px solid var(--line);background:var(--sunk);border-radius:6px;padding:8px 2px;font-size:.82rem;cursor:pointer;min-width:0}
+.quick button:hover{border-color:var(--ink)}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px;margin-bottom:10px}
+.chips .hole{height:44px;font-size:.95rem;border-radius:6px}
+.selsum{font-size:.84rem;color:var(--muted);margin:0 0 12px;min-height:1.2em}
+.selsum b{color:var(--ink);font-weight:600}
+.preview{font-size:.88rem;margin:0 0 10px;padding:8px 10px;background:var(--sunk);border-left:3px solid var(--line);border-radius:0 6px 6px 0}
+.preview.ok{border-left-color:var(--barr)}
+.preview.err{border-left-color:var(--err);color:var(--err)}
+.go{width:100%;border:0;border-radius:8px;background:var(--brand-d);color:#fff;font-family:var(--cond);font-weight:600;font-size:1.2rem;padding:13px;cursor:pointer}
+.go:disabled{opacity:.45;cursor:not-allowed}
+.ro{font-size:.88rem;color:var(--muted);margin:10px 0 0}
+
+/* Bitácora */
+.log{margin-top:24px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px}
+.loghead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 16px;margin-bottom:6px}
+.loghead h2{margin:0}
+.foldbtn{display:flex;align-items:center;gap:8px;border:0;background:none;padding:4px 6px 4px 0;cursor:pointer;color:inherit;text-align:left}
+.foldbtn:hover h2{color:var(--brand-d)}
+.chev{width:22px;height:22px;fill:none;stroke:var(--brand-d);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s;flex-shrink:0}
+.fold.closed .chev{transform:rotate(-90deg)}
+.fcount{font-size:.85rem;color:var(--muted);font-weight:500}
+.fold.closed .foldbody,.fold.closed .filt{display:none}
+.fold.closed .loghead{margin-bottom:0}
+.fold.closed{padding-top:12px;padding-bottom:12px}
+@media (min-width:1024px){
+  .fold .loghead{cursor:pointer}
+  .fold.closed{cursor:pointer}
+  .fold.closed:hover{border-color:var(--brand);background:var(--brand-l)}
+  .fold .loghead .filt{cursor:default}
+}
+.filt{display:flex;align-items:center;gap:8px;font-size:.86rem}
+.filt input{padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--sunk)}
+.filt button{border:1px solid var(--line);background:var(--sunk);border-radius:6px;padding:7px 10px;cursor:pointer;font-size:.84rem}
+#logList{list-style:none;margin:0;padding:0}
+.ent{display:grid;grid-template-columns:200px minmax(0,1fr) auto;gap:4px 16px;padding:12px 0 12px 12px;border-bottom:1px solid var(--line);border-left:4px solid var(--c,var(--unk));margin-top:6px}
+.e-B{--c:var(--barr)} .e-T{--c:var(--tumb)} .e-P{--c:var(--pend)} .e-I{--c:var(--navy)} .e-F{--c:var(--barr)} .e-A{--c:#8A94A0} .e-R{--c:var(--brand)} .e-N{--c:var(--brand)}
+.ewho{font-size:.84rem;color:var(--muted);line-height:1.35;min-width:0}
+.ewho b{display:block;color:var(--ink);font-weight:600;font-size:.95rem;overflow-wrap:anywhere}
+.ewhat{min-width:0}
+.ewhat .ea{font-weight:600;color:var(--c)}
+.eqlab{margin-bottom:6px!important}
+.ewhat .eq{display:inline-block;margin:0 2px;padding:1px 7px;border-radius:999px;background:var(--sunk);border:1px solid var(--line);font-size:.8rem;font-weight:600;color:var(--ink)}
+.ewhat p{margin:2px 0 0;color:var(--muted);font-size:.86rem}
+.ewhat .ed{font-size:.78rem;color:var(--muted);font-style:italic}
+.eside{text-align:right;font-size:.88rem;white-space:nowrap;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.eact{display:flex;gap:6px}
+.eact button{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:5px 10px;font-size:.82rem;cursor:pointer}
+.eact .del{color:var(--err);border-color:color-mix(in srgb,var(--err) 35%,var(--line))}
+.empty{color:var(--muted);padding:14px 0;margin:0}
+
+/* Navegación inferior (teléfono) */
+.bnav{display:none}
+
+/* Pantalla de nombre */
+.gate{position:fixed;inset:0;z-index:50;background:#20375A;display:grid;place-items:center;padding:24px 20px calc(24px + env(safe-area-inset-bottom,0px))}
+.gcard{width:100%;max-width:380px;background:var(--surface);border-radius:14px;padding:26px 22px 22px}
+.gcard h2{font-size:1.9rem;color:var(--navy);margin-bottom:4px}
+.ghead{display:flex;justify-content:center;align-items:center;margin:0 0 16px}
+.gcard h2,.gcard > p{text-align:center}
+.gminer{height:96px;width:auto;flex-shrink:0}
+.glogo{height:42px;margin:0}
+.gcard p{margin:0 0 18px;color:var(--muted)}
+.gcard label{display:block;font-weight:600;font-size:.9rem;margin-bottom:6px}
+.gcard input{display:block;width:100%;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--sunk);margin-bottom:6px}
+.gerr{min-height:1.3em;margin:0 0 10px;color:var(--err);font-size:.86rem}
+
+/* Hojas de diálogo */
+dialog{border:0;border-radius:14px;padding:0;width:min(440px,calc(100% - 24px));color:var(--ink);background:var(--surface)}
+dialog::backdrop{background:rgba(16,22,20,.5)}
+.dlg{padding:20px}
+.dlg h2{margin-bottom:6px}
+.dlg p{margin:0 0 14px;color:var(--muted)}
+.dlg label{display:block;font-weight:600;font-size:.86rem;margin-bottom:12px}
+.dlg input,.dlg select,.dlg textarea{display:block;width:100%;margin-top:4px;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--sunk);font-weight:400}
+.dbtns{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+.dbtns button{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 16px;font-weight:600;cursor:pointer}
+.dbtns .pri{background:var(--brand-d);border-color:var(--brand-d);color:#fff}
+.dbtns .dan{background:var(--err);border-color:var(--err);color:#fff}
+
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:8px;font-size:.92rem;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:calc(100% - 32px);z-index:60}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:1180px){
+  .dk{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .dkc.big{grid-column:span 2}
+  .kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .kpi:nth-child(4){border-left:0}
+  .kpi:nth-child(n+4){border-top-width:3px}
+}
+
+/* ---------- Modo app (teléfono y tableta) ---------- */
+@media (max-width:1023px){
+  body{background:var(--bg)}
+  .app{display:block;padding:0 0 calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 12px)}
+  .top{position:sticky;top:0;z-index:20;margin:0;padding:calc(8px + env(safe-area-inset-top,0px)) 12px 8px;background:var(--surface);border-bottom:3px solid var(--brand)}
+  .brandbox{gap:10px}
+  .logo{height:30px}
+  .miner{height:36px}
+  .bsep,.kick{display:none}
+  h1{font-size:1.1rem;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sync{padding:5px 9px;font-size:.78rem}
+  .who{padding:3px 10px 3px 3px;max-width:130px}
+  .who .av{width:28px;height:28px}
+  .who .nm{font-size:.85rem}
+  .tabs{display:flex;gap:8px;overflow-x:auto;padding:0;margin:0;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:0 0 auto;width:auto;min-width:150px;padding:8px 12px 10px;scroll-snap-align:start}
+  .tab .tp{display:none}
+  .tab .tn{font-size:1.08rem}
+  .tab .tpct{font-size:.8rem}
+  .view{padding:12px 16px 0}
+  .app:not([data-view="av"]) .v-av,
+  .app:not([data-view="reg"]) .v-reg,
+  .app:not([data-view="log"]) .v-log{display:none}
+  .app:not([data-view="hist"]) .v-hist{display:none}
+  .app:not([data-view="av"]) .v-dash{display:none}
+  .v-dash{padding:12px 16px 0}
+  .dash{margin:0;padding:14px;border-radius:10px}
+  .dk{grid-template-columns:1fr 1fr;gap:8px}
+  .dkc.big{grid-column:1/-1}
+  .dkc b{font-size:1.5rem}
+  .dmid{grid-template-columns:1fr 1fr;gap:8px}
+  .dst{padding:8px 10px;font-size:.8rem}
+  .fold.closed .foldbody{display:block}
+  .fold.closed .filt{display:flex}
+  .fold.closed{padding:14px}
+  .chev{display:none}
+  .foldbtn{pointer-events:none}
+  .app:not([data-view="av"]):not([data-view="reg"]) .zbar{display:none!important}
+  .tabsbar{padding:12px 16px 4px;margin:0;overflow:hidden}
+  .npbtn{flex:0 0 auto;min-width:130px;min-height:0;padding:6px 12px;font-size:.86rem}
+  .zbar{margin:12px 16px 0}
+  .hist{margin-top:0;border-radius:10px;padding:14px}
+  .hrow{grid-template-columns:minmax(0,1.4fr) repeat(4,minmax(0,1fr));font-size:.8rem;padding:8px}
+  .hhead{font-size:.68rem}
+  .v-reg{position:static}
+  .kpis{grid-template-columns:1fr 1fr}
+  .kpi{padding:12px 14px 14px}
+  .kpi+.kpi{border-left:0}
+  .kpi:nth-child(even){border-left:1px solid var(--line)}
+  .kpi:nth-child(n+3){border-top:3px solid var(--c)}
+  .kpi strong{font-size:1.9rem}
+  .board{padding:0;overflow:hidden}
+  .board h2{padding:14px 14px 4px}
+  .board .scroll{display:none}
+  .slist{display:block}
+  .est{padding:0 14px 12px}
+  .panel{border-radius:10px;padding:14px 14px 16px;border-top-width:0}
+  .panel h2{display:none}
+  .chips{grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px}
+  .chips .hole{height:52px;font-size:1.05rem}
+  .gowrap{position:sticky;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));margin:0 -14px -16px;padding:10px 14px 12px;background:linear-gradient(to top,var(--surface) 75%,rgba(255,255,255,0));z-index:5}
+  .log{margin-top:0;border-radius:10px;padding:14px}
+  .ent{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"who side" "what what";padding:10px 0 12px 12px}
+  .ewho{grid-area:who} .ewhat{grid-area:what} .eside{grid-area:side}
+  .bnav{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;z-index:30;height:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);background:var(--surface);border-top:1px solid var(--line)}
+  .bnav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:0;background:none;color:var(--muted);font-size:.78rem;font-weight:600;cursor:pointer}
+  .bnav svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .bnav button[aria-current="page"]{color:var(--brand-d);box-shadow:inset 0 3px 0 var(--brand)}
+  .bnav button[aria-current="page"] svg{stroke-width:2.4}
+  .toast{bottom:calc(var(--nav-h) + 14px + env(safe-area-inset-bottom,0px))}
+}
+@media (max-width:420px){
+  .sync{font-size:0;gap:0;padding:6px}
+  .who{padding:3px}
+  .who .nm{display:none}
+  .edbtn span{display:none}
+  .edbtn{padding:6px}
+  .logo{height:26px}
+  .miner{height:30px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app" id="app" data-view="reg">
+  <header class="top">
+    <div class="brandbox"><svg class="miner" viewBox="31.8 28.2 165.8 174.6" aria-hidden="true"><path fill="#F07506" fill-rule="evenodd" d="M134.1 182.5L133.0 183.0L131.4 184.2L129.6 186.0L129.2 186.8L129.2 187.4L129.8 188.4L130.8 189.4L133.9 191.2L135.1 191.8L135.6 191.6L136.1 190.9L136.0 186.6L134.9 183.0Z M33.0 140.0L32.8 141.6L32.8 143.8L33.9 148.6L34.1 150.9L34.8 153.1L35.0 155.2L35.6 156.6L36.4 159.9L37.6 162.5L38.5 165.6L42.0 172.8L42.9 173.9L46.4 179.6L47.8 181.1L49.0 183.1L50.2 184.2L51.0 185.5L55.0 189.4L56.4 190.2L60.0 193.2L64.5 196.0L67.8 197.6L69.8 198.2L72.0 199.4L73.9 200.0L75.4 200.1L79.5 201.2L84.4 201.8L91.5 201.6L92.4 201.4L95.1 201.2L98.0 200.4L101.1 199.9L107.5 197.6L110.5 196.1L111.9 195.8L119.4 191.6L129.9 183.6L131.9 181.5L132.1 178.0L131.9 173.6L131.1 170.8L130.9 168.9L130.1 167.1L130.0 165.9L129.2 164.4L128.9 163.0L128.4 162.2L128.1 161.1L125.8 156.4L124.2 154.1L123.1 152.0L122.6 151.4L122.0 151.0L121.5 150.9L119.9 151.0L115.6 152.1L114.4 152.6L112.2 153.0L110.9 153.6L108.4 154.0L106.5 154.8L104.4 155.0L102.4 155.5L99.9 155.8L94.8 155.8L87.6 154.8L85.9 154.0L83.0 153.4L78.9 151.5L76.9 150.2L73.6 147.1L70.6 143.5L69.8 142.0L68.4 140.2L66.1 136.2L65.9 134.9L65.0 133.4L61.5 129.6L59.4 128.0L55.6 125.9L52.5 125.2L50.1 125.4L46.9 126.1L45.4 127.0L40.5 130.6L34.9 136.6Z M46.0 123.2L46.0 123.8L46.9 123.9L49.5 123.1L51.6 122.9L53.1 122.4L54.8 122.2L56.2 122.4L60.0 123.2L64.0 125.6L66.4 127.6L67.9 129.4L71.4 135.1L72.0 137.5L73.0 139.8L74.8 142.0L78.1 145.4L79.0 145.9L80.1 146.9L81.2 147.6L85.1 149.4L86.9 149.9L91.0 150.6L97.0 150.6L100.8 150.0L103.5 150.0L108.5 149.0L111.2 148.1L113.1 147.9L114.9 147.0L115.4 146.4L115.4 145.4L114.4 142.4L113.2 137.8L112.6 136.9L109.8 136.0L106.1 135.6L104.8 135.1L102.2 134.6L101.1 134.1L99.0 133.8L97.1 133.0L95.6 132.8L93.2 131.8L89.9 130.0L86.5 127.1L86.0 126.2L85.6 124.8L83.9 121.2L82.2 119.5L80.4 118.2L78.1 117.6L76.5 116.8L73.5 115.9L72.0 115.8L67.5 114.9L64.4 114.8L62.8 114.4L60.0 114.1L52.9 114.1L52.4 114.4L52.0 114.9L50.8 117.9L49.9 119.4Z M195.9 99.9L194.8 99.5L191.4 99.4L188.6 99.5L186.6 99.9L182.5 100.0L179.5 100.8L177.4 100.9L174.8 101.6L171.1 102.1L169.4 101.8L167.1 100.6L165.1 100.8L163.0 101.5L161.5 101.8L160.2 102.4L159.1 103.5L158.0 105.2L157.4 105.9L150.1 110.6L147.8 111.9L143.0 115.8L140.9 117.2L139.5 118.6L139.6 119.8L140.4 120.4L141.0 120.4L142.4 119.9L145.6 118.1L146.9 117.8L148.0 117.1L149.0 116.9L150.9 116.0L155.0 115.1L158.5 114.9L159.2 115.1L159.6 115.5L160.1 117.1L162.5 120.5L163.8 121.2L165.8 121.2L166.1 121.6L165.1 122.9L164.8 124.0L164.8 125.8L165.1 127.6L165.0 128.5L164.4 129.1L163.1 129.6L160.9 129.9L159.2 130.4L158.0 131.4L154.8 134.9L153.5 135.8L149.9 137.8L145.5 139.5L142.2 140.1L137.4 141.8L135.1 142.1L133.6 142.8L131.6 143.1L130.4 143.6L128.0 144.0L127.0 144.5L125.4 144.9L124.6 145.5L124.9 147.2L126.0 149.0L126.4 150.4L127.8 152.6L128.1 154.0L129.9 157.2L131.0 160.1L131.9 161.6L132.0 162.5L133.5 166.0L133.9 167.5L134.6 168.9L134.9 170.2L135.6 172.1L135.9 174.1L136.6 176.4L136.9 178.0L137.8 181.0L137.9 182.4L137.8 190.4L138.0 190.9L138.5 191.0L139.4 190.5L140.6 188.6L146.1 182.5L150.6 176.9L151.8 175.9L152.6 174.6L153.6 173.6L154.1 173.4L159.0 172.2L166.1 171.8L169.0 171.1L171.8 171.0L174.6 170.2L177.4 170.4L180.4 173.0L181.6 173.1L183.1 172.9L185.0 172.1L185.9 171.6L186.6 170.6L187.0 169.1L186.2 166.2L186.1 163.9L186.5 163.1L188.4 161.4L188.9 160.0L188.9 158.6L188.0 154.9L187.6 154.4L187.0 154.1L186.4 154.1L186.1 153.9L186.4 153.0L188.0 151.2L188.1 149.0L187.6 145.9L187.2 144.6L186.6 143.9L186.1 143.6L185.1 143.5L184.9 143.2L186.1 140.8L186.0 138.9L184.2 134.8L183.8 134.2L182.6 134.0L182.4 133.8L182.5 132.1L182.1 131.1L182.0 130.0L181.2 128.4L180.9 126.9L180.1 125.6L179.5 125.2L178.9 125.2L175.9 126.2L175.4 126.1L175.0 125.8L174.1 124.0L174.0 123.4L172.6 120.9L171.9 120.4L171.1 120.2L171.0 120.0L172.5 118.8L173.8 115.8L173.8 114.1L173.4 113.1L173.4 111.6L174.5 110.2L177.0 108.8L179.2 108.0L182.8 106.2L183.9 106.0L185.5 105.1L186.6 104.9L187.9 104.2L191.2 103.1L193.0 102.2L195.0 101.8L195.9 101.2L196.4 100.6Z M50.4 90.4L49.9 91.8L49.9 96.2L49.8 96.4L49.8 108.0L49.9 109.2L50.4 110.2L50.9 110.5L54.1 110.5L57.0 111.0L62.5 111.0L69.0 112.0L72.0 112.1L75.6 113.1L77.8 114.0L79.9 114.4L81.1 114.9L83.9 116.6L86.1 118.8L87.8 121.8L89.2 125.5L90.4 126.8L91.8 127.8L94.2 129.0L95.4 129.2L97.1 130.0L98.5 130.2L100.1 131.0L101.8 131.2L103.6 132.0L105.8 132.1L108.2 133.0L111.2 133.1L113.9 133.9L116.0 134.0L117.0 133.6L118.5 132.5L120.0 130.9L120.8 129.6L121.1 128.6L121.2 127.5L121.1 120.2L120.8 118.2L120.8 117.0L121.6 116.0L124.4 114.1L125.4 113.1L125.9 112.0L125.6 109.5L125.1 107.0L125.1 104.4L124.8 102.6L124.8 101.4L124.4 100.6L123.4 100.5L120.8 101.5L117.6 102.0L115.2 102.8L112.6 102.9L108.5 103.5L104.0 103.8L92.0 103.6L89.2 103.0L86.4 102.8L83.6 101.9L81.0 101.5L79.2 100.8L77.8 100.5L76.2 99.9L75.1 99.8L68.4 97.5L67.4 97.0L66.2 96.8L64.1 95.8L63.0 95.0L60.0 93.9L58.5 92.9L57.6 92.6L52.4 90.0L51.1 89.8Z M39.8 69.0L39.8 71.0L40.1 72.8L41.6 75.6L43.6 78.0L44.6 79.5L45.6 80.5L49.2 83.2L50.4 84.4L54.2 86.5L55.8 87.6L57.8 88.4L60.4 89.9L65.0 91.9L66.5 92.2L67.8 92.9L70.5 93.8L72.5 94.1L74.6 95.1L75.6 95.2L77.9 96.0L80.4 96.2L82.9 97.0L84.5 97.1L88.8 98.1L91.1 98.1L96.1 99.0L111.0 99.1L111.1 99.0L114.6 99.0L118.6 98.1L120.9 98.0L125.2 97.1L127.2 96.1L129.1 95.6L130.4 95.0L131.2 94.9L135.0 93.1L138.6 90.4L140.9 87.8L141.8 86.0L142.8 82.1L142.6 80.0L141.8 77.8L141.2 77.4L140.2 77.6L137.2 79.8L135.4 80.8L127.4 83.6L124.2 84.0L119.6 84.9L117.5 84.9L115.1 85.2L108.2 85.4L105.2 85.2L102.4 84.8L98.0 84.6L92.5 83.9L82.8 81.6L78.6 80.1L76.2 79.6L75.1 79.0L70.8 77.5L67.9 75.9L63.2 73.6L62.2 72.9L59.5 71.4L56.0 68.6L51.8 64.2L50.1 61.8L49.1 59.8L48.8 58.5L48.1 57.8L47.4 57.8L47.0 58.0L45.8 59.4L43.2 63.1L42.4 64.9L40.5 67.2Z M53.0 54.5L52.9 55.2L53.0 56.2L53.5 57.5L55.9 60.9L57.8 62.9L60.9 65.5L67.6 69.9L71.8 71.8L75.4 73.1L76.5 73.8L78.2 74.1L80.1 75.0L82.8 75.9L84.8 76.1L87.2 77.0L90.5 77.8L93.6 78.1L97.2 79.0L102.9 79.4L104.0 79.6L115.2 79.8L118.5 79.5L121.0 79.0L122.9 78.9L125.2 78.1L127.4 77.9L132.6 76.0L135.5 74.5L136.6 73.8L137.1 73.2L137.4 72.6L136.9 70.5L136.1 69.0L135.8 67.6L135.1 66.6L134.8 65.4L132.5 62.0L129.6 59.2L129.1 57.9L129.0 54.6L127.8 50.8L125.8 46.4L123.5 43.2L120.4 40.1L116.2 37.5L113.4 36.0L111.6 35.5L110.6 35.0L108.9 34.6L107.4 34.0L105.5 33.6L104.6 33.1L103.1 31.8L101.0 30.5L99.6 29.9L97.5 29.4L96.4 29.2L92.1 30.0L90.6 30.8L88.1 31.5L83.6 32.0L82.1 32.5L80.6 32.8L78.8 33.6L77.4 34.0L74.8 35.6L73.0 36.4L71.1 37.8L69.0 39.0L65.6 41.8L63.6 43.0L60.5 46.2L57.1 49.4L56.0 51.0L54.0 53.0Z"/></svg><span class="bsep" aria-hidden="true"></span><div class="ttl"><span class="kick">Control de barrenación larga</span><h1 id="hTitle">Avance de barrenación larga</h1></div></div>
+    <div class="tright">
+      <span class="sync" id="sync" title="Conectando">Conectando</span>
+      <button type="button" class="edbtn" id="edBtn" title="Entrar como editor"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span id="edLbl">Editor</span></button>
+      <button type="button" class="who" id="whoBtn" title="Cambiar nombre"><span class="av" id="whoAv">?</span><span class="nm" id="whoNm">Sin nombre</span></button>
+    </div>
+  </header>
+
+  <section class="v-dash" aria-label="Tablero general">
+    <div class="dash fold" id="foldDash">
+      <div class="loghead">
+        <button type="button" class="foldbtn" aria-expanded="true" aria-controls="dashBody"><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg><h2>Tablero general</h2><span class="dsub" id="dashSub"></span></button>
+      </div>
+      <div class="foldbody" id="dashBody"></div>
+    </div>
+  </section>
+
+  <div class="tabsbar"><nav class="tabs" id="tabs" role="tablist" aria-label="Proyectos"></nav></div>
+  <div class="zbar" id="zbar" hidden></div>
+
+  <section class="view v-av" aria-label="Avance">
+    <div class="kpis">
+      <div class="kpi k-mb"><span class="lab">Metros barrenados</span><strong id="kMB">—</strong></div>
+      <div class="kpi k-mp"><span class="lab">Metros por barrenar</span><strong id="kMP">—</strong></div>
+      <div class="kpi k-hb"><span class="lab">Barrenos listos</span><strong id="kHB">—</strong></div>
+      <div class="kpi k-ht"><span class="lab">Barrenos tumbados</span><strong id="kHT">—</strong></div>
+      <div class="kpi k-tb"><span class="lab">Tonelaje barrenado</span><strong id="kTB">—</strong></div>
+      <div class="kpi k-tt"><span class="lab">Tonelaje tumbado</span><strong id="kTT">—</strong></div>
+    </div>
+    <div class="overall">
+      <div class="bar" id="bar" role="img" aria-label="Avance en metros"><span class="t"></span><span class="b"></span><span class="p"></span></div>
+      <div class="legend">
+        <span><i style="background:var(--pend)"></i>Falta por barrenar</span>
+        <span><i style="background:var(--barr)"></i>Barrenado</span>
+        <span><i style="background:var(--tumb)"></i>Tumbado</span>
+      </div>
+    </div>
+    <p class="today" id="today"></p>
+    <div class="board">
+      <div class="bhead"><h2>Estado por sección</h2><div class="bbtns"><button type="button" class="rptbtn" id="rptBtn">Reporte PDF</button><button type="button" class="closez" id="closeBtn" hidden>Eliminar proyecto</button></div></div>
+      <div class="scroll"><div class="grid" id="grid"></div></div>
+      <div class="slist" id="slist"></div>
+      <p class="est" id="estNote" hidden></p>
+    </div>
+  </section>
+
+  <section class="view v-reg" aria-label="Registrar avance">
+    <div class="panel">
+      <h2>Registrar avance</h2>
+      <form id="frm" novalidate>
+        <div class="regby"><span>Registra <b id="regName">—</b></span><button type="button" id="regChange">Cambiar</button></div>
+        <div class="two">
+          <label>Fecha<input type="date" id="fFecha"></label>
+          <label>Turno<select id="fTurno">
+            <option value="T1">Turno 1</option>
+            <option value="T2">Turno 2</option>
+          </select></label>
+        </div>
+        <fieldset class="acts" id="acts">
+          <legend>Actividad</legend>
+          <label class="act a-B"><input type="radio" name="act" value="B" checked><span>Barrenado</span></label>
+          <label class="act a-T"><input type="radio" name="act" value="T"><span>Tumbado</span></label>
+          <label class="act a-P" id="actP" hidden><input type="radio" name="act" value="P"><span>Corregir a por barrenar</span></label>
+        </fieldset>
+        <div id="eqWrap">
+          <label class="eqlab">Equipo de barrenación<select id="fEq"><option value="">Selecciona el equipo</option></select></label>
+        </div>
+        <label>Sección<select id="fSec"></select></label>
+        <div class="quick" id="quick">
+          <button type="button" data-q="P">Pendientes</button>
+          <button type="button" data-q="B">Barrenados</button>
+          <button type="button" data-q="all">Todos</button>
+          <button type="button" data-q="none">Limpiar</button>
+        </div>
+        <div class="chips" id="chips" role="group" aria-label="Barrenos de la sección"></div>
+        <p class="selsum" id="selSum"></p>
+        <label>Comentario<textarea id="fCom" rows="2" maxlength="500" placeholder="Opcional"></textarea></label>
+        <p class="preview" id="preview" aria-live="polite"></p>
+        <div class="gowrap"><button class="go" id="go" type="submit">Registrar avance</button></div>
+        <p class="ro" id="roMsg" hidden></p>
+      </form>
+    </div>
+  </section>
+
+  <section class="view v-log" aria-label="Bitácora">
+    <div class="log fold" id="foldLog">
+      <div class="loghead">
+        <button type="button" class="foldbtn" aria-expanded="true" aria-controls="logBody"><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg><h2>Bitácora</h2><span class="fcount" id="logCount"></span></button>
+        <div class="filt"><label for="logDate">Fecha</label><input type="date" id="logDate"><button type="button" id="logAll">Ver todo</button></div>
+      </div>
+      <div class="foldbody" id="logBody"><ol id="logList"></ol></div>
+    </div>
+  </section>
+
+  <section class="view v-hist" aria-label="Historial">
+    <div class="hist fold" id="foldHist">
+      <div class="loghead">
+        <button type="button" class="foldbtn" aria-expanded="true" aria-controls="histWrap"><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg><h2>Historial</h2><span class="fcount" id="histCount"></span></button>
+        <div class="filt"><label for="hMes">Mes</label><input type="month" id="hMes"><button type="button" id="hAll">Todos los meses</button></div>
+      </div>
+      <div class="foldbody" id="histWrap"><div id="histBody"></div></div>
+    </div>
+  </section>
+</div>
+
+<nav class="bnav" id="bnav" aria-label="Secciones de la app">
+  <button type="button" data-v="reg" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Registrar</button>
+  <button type="button" data-v="av"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Avance</button>
+  <button type="button" data-v="log"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Bitácora</button>
+  <button type="button" data-v="hist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>Historial</button>
+</nav>
+
+<div class="gate" id="gate">
+  <form class="gcard" id="gForm" novalidate>
+    <div class="ghead"><svg class="gminer" viewBox="31.8 28.2 165.8 174.6" aria-hidden="true"><path fill="#F07506" fill-rule="evenodd" d="M134.1 182.5L133.0 183.0L131.4 184.2L129.6 186.0L129.2 186.8L129.2 187.4L129.8 188.4L130.8 189.4L133.9 191.2L135.1 191.8L135.6 191.6L136.1 190.9L136.0 186.6L134.9 183.0Z M33.0 140.0L32.8 141.6L32.8 143.8L33.9 148.6L34.1 150.9L34.8 153.1L35.0 155.2L35.6 156.6L36.4 159.9L37.6 162.5L38.5 165.6L42.0 172.8L42.9 173.9L46.4 179.6L47.8 181.1L49.0 183.1L50.2 184.2L51.0 185.5L55.0 189.4L56.4 190.2L60.0 193.2L64.5 196.0L67.8 197.6L69.8 198.2L72.0 199.4L73.9 200.0L75.4 200.1L79.5 201.2L84.4 201.8L91.5 201.6L92.4 201.4L95.1 201.2L98.0 200.4L101.1 199.9L107.5 197.6L110.5 196.1L111.9 195.8L119.4 191.6L129.9 183.6L131.9 181.5L132.1 178.0L131.9 173.6L131.1 170.8L130.9 168.9L130.1 167.1L130.0 165.9L129.2 164.4L128.9 163.0L128.4 162.2L128.1 161.1L125.8 156.4L124.2 154.1L123.1 152.0L122.6 151.4L122.0 151.0L121.5 150.9L119.9 151.0L115.6 152.1L114.4 152.6L112.2 153.0L110.9 153.6L108.4 154.0L106.5 154.8L104.4 155.0L102.4 155.5L99.9 155.8L94.8 155.8L87.6 154.8L85.9 154.0L83.0 153.4L78.9 151.5L76.9 150.2L73.6 147.1L70.6 143.5L69.8 142.0L68.4 140.2L66.1 136.2L65.9 134.9L65.0 133.4L61.5 129.6L59.4 128.0L55.6 125.9L52.5 125.2L50.1 125.4L46.9 126.1L45.4 127.0L40.5 130.6L34.9 136.6Z M46.0 123.2L46.0 123.8L46.9 123.9L49.5 123.1L51.6 122.9L53.1 122.4L54.8 122.2L56.2 122.4L60.0 123.2L64.0 125.6L66.4 127.6L67.9 129.4L71.4 135.1L72.0 137.5L73.0 139.8L74.8 142.0L78.1 145.4L79.0 145.9L80.1 146.9L81.2 147.6L85.1 149.4L86.9 149.9L91.0 150.6L97.0 150.6L100.8 150.0L103.5 150.0L108.5 149.0L111.2 148.1L113.1 147.9L114.9 147.0L115.4 146.4L115.4 145.4L114.4 142.4L113.2 137.8L112.6 136.9L109.8 136.0L106.1 135.6L104.8 135.1L102.2 134.6L101.1 134.1L99.0 133.8L97.1 133.0L95.6 132.8L93.2 131.8L89.9 130.0L86.5 127.1L86.0 126.2L85.6 124.8L83.9 121.2L82.2 119.5L80.4 118.2L78.1 117.6L76.5 116.8L73.5 115.9L72.0 115.8L67.5 114.9L64.4 114.8L62.8 114.4L60.0 114.1L52.9 114.1L52.4 114.4L52.0 114.9L50.8 117.9L49.9 119.4Z M195.9 99.9L194.8 99.5L191.4 99.4L188.6 99.5L186.6 99.9L182.5 100.0L179.5 100.8L177.4 100.9L174.8 101.6L171.1 102.1L169.4 101.8L167.1 100.6L165.1 100.8L163.0 101.5L161.5 101.8L160.2 102.4L159.1 103.5L158.0 105.2L157.4 105.9L150.1 110.6L147.8 111.9L143.0 115.8L140.9 117.2L139.5 118.6L139.6 119.8L140.4 120.4L141.0 120.4L142.4 119.9L145.6 118.1L146.9 117.8L148.0 117.1L149.0 116.9L150.9 116.0L155.0 115.1L158.5 114.9L159.2 115.1L159.6 115.5L160.1 117.1L162.5 120.5L163.8 121.2L165.8 121.2L166.1 121.6L165.1 122.9L164.8 124.0L164.8 125.8L165.1 127.6L165.0 128.5L164.4 129.1L163.1 129.6L160.9 129.9L159.2 130.4L158.0 131.4L154.8 134.9L153.5 135.8L149.9 137.8L145.5 139.5L142.2 140.1L137.4 141.8L135.1 142.1L133.6 142.8L131.6 143.1L130.4 143.6L128.0 144.0L127.0 144.5L125.4 144.9L124.6 145.5L124.9 147.2L126.0 149.0L126.4 150.4L127.8 152.6L128.1 154.0L129.9 157.2L131.0 160.1L131.9 161.6L132.0 162.5L133.5 166.0L133.9 167.5L134.6 168.9L134.9 170.2L135.6 172.1L135.9 174.1L136.6 176.4L136.9 178.0L137.8 181.0L137.9 182.4L137.8 190.4L138.0 190.9L138.5 191.0L139.4 190.5L140.6 188.6L146.1 182.5L150.6 176.9L151.8 175.9L152.6 174.6L153.6 173.6L154.1 173.4L159.0 172.2L166.1 171.8L169.0 171.1L171.8 171.0L174.6 170.2L177.4 170.4L180.4 173.0L181.6 173.1L183.1 172.9L185.0 172.1L185.9 171.6L186.6 170.6L187.0 169.1L186.2 166.2L186.1 163.9L186.5 163.1L188.4 161.4L188.9 160.0L188.9 158.6L188.0 154.9L187.6 154.4L187.0 154.1L186.4 154.1L186.1 153.9L186.4 153.0L188.0 151.2L188.1 149.0L187.6 145.9L187.2 144.6L186.6 143.9L186.1 143.6L185.1 143.5L184.9 143.2L186.1 140.8L186.0 138.9L184.2 134.8L183.8 134.2L182.6 134.0L182.4 133.8L182.5 132.1L182.1 131.1L182.0 130.0L181.2 128.4L180.9 126.9L180.1 125.6L179.5 125.2L178.9 125.2L175.9 126.2L175.4 126.1L175.0 125.8L174.1 124.0L174.0 123.4L172.6 120.9L171.9 120.4L171.1 120.2L171.0 120.0L172.5 118.8L173.8 115.8L173.8 114.1L173.4 113.1L173.4 111.6L174.5 110.2L177.0 108.8L179.2 108.0L182.8 106.2L183.9 106.0L185.5 105.1L186.6 104.9L187.9 104.2L191.2 103.1L193.0 102.2L195.0 101.8L195.9 101.2L196.4 100.6Z M50.4 90.4L49.9 91.8L49.9 96.2L49.8 96.4L49.8 108.0L49.9 109.2L50.4 110.2L50.9 110.5L54.1 110.5L57.0 111.0L62.5 111.0L69.0 112.0L72.0 112.1L75.6 113.1L77.8 114.0L79.9 114.4L81.1 114.9L83.9 116.6L86.1 118.8L87.8 121.8L89.2 125.5L90.4 126.8L91.8 127.8L94.2 129.0L95.4 129.2L97.1 130.0L98.5 130.2L100.1 131.0L101.8 131.2L103.6 132.0L105.8 132.1L108.2 133.0L111.2 133.1L113.9 133.9L116.0 134.0L117.0 133.6L118.5 132.5L120.0 130.9L120.8 129.6L121.1 128.6L121.2 127.5L121.1 120.2L120.8 118.2L120.8 117.0L121.6 116.0L124.4 114.1L125.4 113.1L125.9 112.0L125.6 109.5L125.1 107.0L125.1 104.4L124.8 102.6L124.8 101.4L124.4 100.6L123.4 100.5L120.8 101.5L117.6 102.0L115.2 102.8L112.6 102.9L108.5 103.5L104.0 103.8L92.0 103.6L89.2 103.0L86.4 102.8L83.6 101.9L81.0 101.5L79.2 100.8L77.8 100.5L76.2 99.9L75.1 99.8L68.4 97.5L67.4 97.0L66.2 96.8L64.1 95.8L63.0 95.0L60.0 93.9L58.5 92.9L57.6 92.6L52.4 90.0L51.1 89.8Z M39.8 69.0L39.8 71.0L40.1 72.8L41.6 75.6L43.6 78.0L44.6 79.5L45.6 80.5L49.2 83.2L50.4 84.4L54.2 86.5L55.8 87.6L57.8 88.4L60.4 89.9L65.0 91.9L66.5 92.2L67.8 92.9L70.5 93.8L72.5 94.1L74.6 95.1L75.6 95.2L77.9 96.0L80.4 96.2L82.9 97.0L84.5 97.1L88.8 98.1L91.1 98.1L96.1 99.0L111.0 99.1L111.1 99.0L114.6 99.0L118.6 98.1L120.9 98.0L125.2 97.1L127.2 96.1L129.1 95.6L130.4 95.0L131.2 94.9L135.0 93.1L138.6 90.4L140.9 87.8L141.8 86.0L142.8 82.1L142.6 80.0L141.8 77.8L141.2 77.4L140.2 77.6L137.2 79.8L135.4 80.8L127.4 83.6L124.2 84.0L119.6 84.9L117.5 84.9L115.1 85.2L108.2 85.4L105.2 85.2L102.4 84.8L98.0 84.6L92.5 83.9L82.8 81.6L78.6 80.1L76.2 79.6L75.1 79.0L70.8 77.5L67.9 75.9L63.2 73.6L62.2 72.9L59.5 71.4L56.0 68.6L51.8 64.2L50.1 61.8L49.1 59.8L48.8 58.5L48.1 57.8L47.4 57.8L47.0 58.0L45.8 59.4L43.2 63.1L42.4 64.9L40.5 67.2Z M53.0 54.5L52.9 55.2L53.0 56.2L53.5 57.5L55.9 60.9L57.8 62.9L60.9 65.5L67.6 69.9L71.8 71.8L75.4 73.1L76.5 73.8L78.2 74.1L80.1 75.0L82.8 75.9L84.8 76.1L87.2 77.0L90.5 77.8L93.6 78.1L97.2 79.0L102.9 79.4L104.0 79.6L115.2 79.8L118.5 79.5L121.0 79.0L122.9 78.9L125.2 78.1L127.4 77.9L132.6 76.0L135.5 74.5L136.6 73.8L137.1 73.2L137.4 72.6L136.9 70.5L136.1 69.0L135.8 67.6L135.1 66.6L134.8 65.4L132.5 62.0L129.6 59.2L129.1 57.9L129.0 54.6L127.8 50.8L125.8 46.4L123.5 43.2L120.4 40.1L116.2 37.5L113.4 36.0L111.6 35.5L110.6 35.0L108.9 34.6L107.4 34.0L105.5 33.6L104.6 33.1L103.1 31.8L101.0 30.5L99.6 29.9L97.5 29.4L96.4 29.2L92.1 30.0L90.6 30.8L88.1 31.5L83.6 32.0L82.1 32.5L80.6 32.8L78.8 33.6L77.4 34.0L74.8 35.6L73.0 36.4L71.1 37.8L69.0 39.0L65.6 41.8L63.6 43.0L60.5 46.2L57.1 49.4L56.0 51.0L54.0 53.0Z"/></svg></div>
+    <h2>Control de barrenación</h2>
+    <p>Escribe tu nombre. Aparecerá en cada avance que registres.</p>
+    <label for="gName">Nombre y apellido</label>
+    <input id="gName" autocomplete="name" maxlength="60" enterkeyhint="go">
+    <p class="gerr" id="gErr" aria-live="polite"></p>
+    <button class="go" type="submit">Entrar</button>
+  </form>
+</div>
+
+<dialog id="ekDlg">
+  <form class="dlg" id="ekForm" method="dialog" novalidate>
+    <h2>Modo editor</h2>
+    <div id="ekLogin">
+      <p>Con la clave de editor puedes agregar, eliminar y restaurar proyectos.</p>
+      <label>Clave de editor<input id="ekIn" type="password" autocomplete="off"></label>
+      <p class="gerr" id="ekErr" aria-live="polite"></p>
+      <div class="dbtns"><button type="button" data-close>Cancelar</button><button type="submit" class="pri">Entrar</button></div>
+    </div>
+    <div id="ekTools" class="ekt" hidden>
+      <p>El modo editor está activo en este dispositivo.</p>
+      <button type="button" id="ekImport">Importar datos de la versión anterior</button>
+      <p class="ekmsg" id="ekMig" aria-live="polite"></p>
+      <div class="dbtns"><button type="button" data-close>Cerrar</button><button type="button" class="dan" id="ekOut">Salir del modo editor</button></div>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="edDlg">
+  <form class="dlg" id="edForm" method="dialog" novalidate>
+    <h2>Editar registro</h2>
+    <p id="edInfo"></p>
+    <div class="two">
+      <label>Fecha<input type="date" id="eFecha"></label>
+      <label>Turno<select id="eTurno"><option value="T1">Turno 1</option><option value="T2">Turno 2</option><option value="">Sin turno</option></select></label>
+    </div>
+    <label>Registró<input id="eNom" maxlength="80"></label>
+    <label id="eEqWrap">Equipo<select id="eEq"><option value="">Sin equipo</option></select></label>
+    <label>Comentario<textarea id="eCom" rows="3" maxlength="500"></textarea></label>
+    <div class="dbtns"><button type="button" data-close>Cancelar</button><button type="submit" class="pri" id="edSave">Guardar cambios</button></div>
+  </form>
+</dialog>
+
+<dialog id="czDlg">
+  <form class="dlg" id="czForm" method="dialog" novalidate>
+    <h2 id="czTitle">Eliminar proyecto</h2>
+    <p id="czInfo"></p>
+    <p id="czNote"></p>
+    <label>Comentario<textarea id="czCom" rows="2" maxlength="500" placeholder="Opcional, por ejemplo: rebaje terminado y disparado"></textarea></label>
+    <div class="dbtns"><button type="button" data-close>Cancelar</button><button type="submit" class="dan" id="czGo">Enviar al historial</button></div>
+  </form>
+</dialog>
+
+<dialog id="reDlg">
+  <form class="dlg" id="reForm" method="dialog" novalidate>
+    <h2>Restaurar proyecto</h2>
+    <p id="reInfo"></p>
+    <div class="dbtns"><button type="button" data-close>Cancelar</button><button type="submit" class="pri" id="reGo">Restaurar</button></div>
+  </form>
+</dialog>
+
+<dialog id="npDlg" class="npd">
+  <div class="dlg">
+    <h2>Nuevo proyecto</h2>
+    <div id="npStep1">
+      <p>Sube el archivo del proyecto (.json) que genera Claude a partir del PDF del plano. Después revisas los datos antes de agregarlo.</p>
+      <input type="file" id="npFile" class="npfile" accept="application/json,.json">
+      <div class="npst" id="npStatus" hidden><span id="npMsg"></span><div class="npbar"><i id="npProg"></i></div></div>
+      <div class="dbtns"><button type="button" id="npCancel">Cancelar</button><button type="button" class="pri" id="npRead" disabled>Cargar archivo</button></div>
+    </div>
+    <div id="npStep2" hidden>
+      <div class="npgrid">
+        <label>Proyecto<input id="npProj" maxlength="10" placeholder="P070"></label>
+        <label>Nombre<input id="npName" maxlength="40" placeholder="ST_4100 1500-1470"></label>
+        <label>Código<input id="npCode" maxlength="40" placeholder="ST_4100_1500-1470"></label>
+      </div>
+      <p class="npsum" id="npSum"></p>
+      <div class="nptab" id="npTable"></div>
+      <p class="npst" id="npWarn" hidden></p>
+      <div class="dbtns"><button type="button" id="npBack">Subir otro archivo</button><button type="button" class="pri" id="npSave">Agregar proyecto</button></div>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="delDlg">
+  <form class="dlg" id="delForm" method="dialog" novalidate>
+    <h2>Eliminar registro</h2>
+    <p id="delInfo"></p>
+    <div class="dbtns"><button type="button" data-close>Cancelar</button><button type="submit" class="dan" id="delGo">Eliminar</button></div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="config.js"></script>
+<script>
+(function(){
+"use strict";
+/* Diseño por rebaje: [sección, metros, toneladas, longitudes por barreno, barrenos de ranura, longitudes estimadas] */
+const DATA={"4058":[["SECC1",348.67,null,[7.79,11.24,15.84,22.63,30.16,29.57,29.46,28.36,28.32,28.28,29.74,30.21,22.83,16.27,10.87,7.09],{"8":"C8","9":"C9","10":"C10"},false],["SECC2",319.82,2270,[7.83,11.99,16.43,22.69,29.64,29.31,29.07,29.16,29.05,29.15,29.6,22.28,15.94,10.73,6.94],{"8":"C8","9":"C9"},false],["SECC3",350.7,2371,[7.65,10.87,16.28,22.31,29.7,29.29,29.12,29.95,29.9,29.86,29.31,29.63,22.63,16.25,11.11,6.82],{"8":"C8","9":"C9","10":"C10"},false],["SECC4",317.01,2542,[7.39,11.45,17.24,23.68,29.66,29.24,29.02,28.3,28.87,29.11,29.31,21.71,14.95,10.28,6.8],null,false],["SECC5",318.23,2128,[7.53,11.59,17.39,23.85,29.71,29.33,29.09,28.18,28.94,29.21,29.52,21.5,15.07,10.36,6.95],null,false],["SECC6",316.22,2574,[7.25,11.36,17.21,23.68,29.41,29.06,29.0,27.74,28.88,29.09,29.44,21.41,15.03,10.47,7.18],null,false],["SECC7",317.1,2570,[7.27,11.38,17.26,23.75,29.46,29.11,28.92,28.11,28.92,29.15,29.51,21.38,15.06,10.48,7.36],null,false],["SECC8",317.75,2575,[7.37,11.46,17.35,23.87,29.56,29.21,29.01,27.92,29.02,29.24,29.57,21.34,15.03,10.48,7.33],null,false],["SECC9",318.35,2574,[7.43,11.58,17.39,23.89,29.53,29.2,29.01,28.15,29.03,29.28,29.51,21.33,15.08,10.53,7.4],null,false],["SECC10",318.75,2568,[7.52,11.63,17.5,24.0,29.55,29.18,28.98,28.33,29.04,29.3,29.43,21.28,15.04,10.55,7.41],null,false],["SECC11",318.96,2556,[7.67,11.73,17.6,24.09,29.6,29.21,29.02,28.33,29.05,29.31,29.32,21.18,14.96,10.5,7.39],null,false],["SECC12",318.82,2580,[7.54,11.67,17.58,24.11,29.62,29.25,29.04,28.42,29.06,29.32,29.22,21.15,14.96,10.5,7.39],null,false],["SECC13",319.78,2594,[7.66,11.75,17.63,24.2,29.69,29.31,29.09,28.45,29.12,29.38,29.18,21.15,15.02,10.57,7.57],null,false],["SECC14",322.29,2594,[7.57,11.69,17.6,24.17,29.63,29.26,29.07,28.62,29.17,29.48,29.21,21.31,15.96,11.52,8.04],null,false],["SECC15",323.97,2588,[7.68,11.71,17.65,24.21,29.6,29.23,29.05,28.69,29.18,29.49,29.18,21.81,16.31,11.8,8.38],null,false],["SECC16",324.14,2583,[7.82,11.87,17.74,24.32,29.76,29.38,29.17,28.6,29.2,29.49,29.01,21.67,16.21,11.71,8.19],null,false],["SECC17",323.73,2601,[7.83,11.83,17.74,24.37,29.81,29.44,29.22,28.76,29.24,29.5,28.93,21.57,16.06,11.5,7.95],null,false],["SECC18",324.34,2574,[7.95,12.0,17.89,24.47,29.9,29.51,29.3,28.81,29.31,29.58,28.87,21.52,15.99,11.44,7.81],null,false],["SECC19",323.97,2034,[8.02,11.92,17.91,24.49,29.91,29.53,29.3,28.77,29.3,29.54,28.78,21.44,15.92,11.36,7.79],null,false]],"4057":[["SECC1",121.01,null,[6.73,8.01,10.08,12.82,11.91,11.13,10.92,11.52,12.1,11.13,8.33,6.33],null,false],["SECC2",148.73,734,[7.13,9.42,12.07,12.57,11.82,11.67,11.53,11.42,11.6,12.2,13.07,10.02,7.77,6.42],{"7":"C7","8":"C8"},false],["SECC3",138.03,913,[6.26,8.15,11.23,12.74,11.98,11.64,11.78,12.0,12.48,13.28,10.81,8.55,7.13],{"7":"C7"},false],["SECC4",143.69,913,[6.26,8.54,11.26,12.92,11.96,11.47,11.4,11.23,11.57,12.26,12.15,9.03,7.25,6.38],{"6":"C6","7":"C7","8":"C8"},false],["SECC5",147.14,943,[5.45,5.29,5.46,5.82,7.53,10.23,12.62,11.44,11.04,11.46,12.13,11.8,9.16,6.82,5.53,5.12,4.9,5.31],null,false],["SECC6",139.58,985,[5.29,5.51,5.51,6.18,7.53,9.54,12.14,11.35,11.13,11.47,12.15,11.41,8.63,6.29,5.35,4.94,5.17],null,false],["SECC7",117.36,1116,[5.37,5.08,5.37,6.69,7.41,8.59,10.97,11.35,11.92,12.12,8.85,7.06,5.92,5.51,5.17],null,false],["SECC8",109.62,828,[5.33,5.23,5.57,5.27,3.97,4.85,11.07,10.98,11.8,12.42,9.04,7.22,6.04,5.49,5.35],null,false],["SECC9",109.52,713,[5.25,5.37,4.35,3.42,4.32,7.0,11.01,11.15,11.92,12.7,9.08,7.19,5.84,5.42,5.49],null,false],["SECC10",110.5,712,[5.24,5.31,4.51,4.31,5.09,6.87,10.81,11.22,11.64,12.28,8.95,7.13,6.0,5.53,5.61],null,false],["SECC11",113.13,774,[5.29,5.1,3.98,3.97,5.55,8.78,11.05,11.17,11.83,12.54,9.29,7.24,6.04,5.64,5.66],null,false],["SECC12",116.78,855,[5.28,4.9,4.88,4.88,7.16,10.8,10.91,10.99,11.75,12.29,8.69,7.0,5.84,5.65,5.76],null,false],["SECC13",115.93,905,[5.06,5.02,4.64,5.13,8.05,11.0,10.7,10.73,11.22,12.14,8.96,6.98,5.48,5.2,5.61],null,false],["SECC14",116.01,912,[5.34,5.33,5.03,5.8,8.35,10.98,10.53,10.6,10.88,11.68,8.38,6.73,5.8,5.44,5.11],null,false]],"4026":[["SECC1",78.97,null,[7.73,8.44,8.5,6.27,7.35,8.43,6.11,4.92,7.07,6.82,7.33],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"1","10":"2","11":"3"},false],["SECC2",81.7,412,[7.51,9.58,7.97,7.38,7.31,7.9,7.24,5.44,7.05,7.15,7.16],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"4","10":"5","11":"6"},false],["SECC3",50.12,207,[7.39,7.23,7.13,7.02,7.11,7.01,7.23],{"1":"7","2":"8","3":"9","4":"10","5":"11","6":"12","7":"13"},false],["SECC4",80.83,206,[7.17,9.29,7.84,7.2,7.4,8.08,7.37,5.26,7.13,7.05,7.03],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"14","10":"15","11":"16"},false],["SECC5",73.05,413,[6.25,8.56,8.51,7.62,7.53,8.92,6.36,5.02,7.13,7.14],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"18","10":"19"},false],["SECC6",81.5,453,[5.93,7.39,9.61,8.35,7.42,7.3,7.43,8.0,8.74,6.4,4.93],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11"},false],["SECC7",110.09,456,[5.0,5.02,5.32,5.94,7.36,9.61,8.38,7.55,7.31,7.57,8.15,8.76,6.31,4.68,4.43,4.29,4.42],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12","13":"B13","14":"B14","15":"B15","16":"B16","17":"B17"},false],["SECC8",109.67,622,[4.99,5.09,5.44,6.1,7.31,9.48,8.19,7.36,7.12,7.31,8.15,8.81,6.29,4.72,4.15,4.28,4.87],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12","13":"B13","14":"B14","15":"B15","16":"B16","17":"B17"},false],["SECC9",105.7,620,[4.78,4.65,4.77,5.36,6.85,8.76,7.89,7.08,6.87,7.37,8.38,8.83,6.22,4.81,4.46,4.37,4.25],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12","13":"B13","14":"B14","15":"B15","16":"B16","17":"B17"},false],["SECC10",101.57,605,[4.62,4.44,4.58,5.06,6.45,8.66,7.87,6.97,6.78,7.03,7.85,8.49,6.04,4.5,4.12,3.97,4.17],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12","13":"B13","14":"B14","15":"B15","16":"B16","17":"B17"},false],["SECC11",105.14,606,[4.57,4.49,4.35,4.67,6.26,8.65,8.14,7.27,6.98,7.37,8.23,8.89,6.61,5.39,4.48,4.32,4.45],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12","13":"B13","14":"B14","15":"B15","16":"B16","17":"B17"},false],["SECC12",101.11,597,[3.64,3.32,3.58,4.44,5.68,8.15,8.06,7.17,6.67,7.19,8.27,9.29,7.05,5.46,4.61,4.17,4.38],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12","13":"B13","14":"B14","15":"B15","16":"B16","17":"B17"},false],["SECC13",80.2,558,[7.85,7.99,7.61,6.68,6.19,6.76,7.81,9.34,6.56,4.22,3.33,2.77,3.07],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12","13":"B13"},false],["SECC14",58.75,456,[7.22,7.51,7.54,7.17,7.36,7.42,7.37,7.16],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8"},false]],"4062-1505":[["SECC1",214.9,null,[8.37,14.93,24.41,29.34,27.79,27.86,27.99,29.62,16.06,8.53],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"C5","6":"C6","7":"C7","8":"B8","9":"B9","10":"B10"},false],["AUX1",201.58,1038,[10.66,18.01,29.3,28.57,27.58,27.62,28.69,20.73,10.41],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"C5","6":"C6","7":"B7","8":"B8","9":"B9"},false],["SECC2",238.59,1158,[8.52,13.84,23.76,28.99,28.66,28.08,28.05,28.73,27.22,15.13,7.6],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"C6","7":"C7","8":"B8","9":"B9","10":"B10","11":"B11"},false],["AUX2",204.24,1162,[10.91,18.75,29.45,28.82,28.53,28.48,28.87,19.08,11.36],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"C5","6":"C6","7":"B7","8":"B8","9":"B9"},false],["SECC3",215.23,1164,[8.79,15.68,24.38,29.04,28.78,28.18,28.76,29.1,14.66,7.87],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"C5","6":"C6","7":"C7","8":"B8","9":"B9","10":"B10"},false],["SECC4",285.85,2604,[8.84,13.54,20.69,29.56,29.12,28.92,28.31,28.46,29.06,29.31,19.29,12.62,8.13],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12","13":"B13"},false],["SECC5",286.34,2554,[8.73,13.45,20.6,29.61,29.21,28.93,28.52,28.65,29.05,29.41,19.09,13.0,8.11],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12","13":"B13"},false],["SECC6",286.42,2551,[8.82,13.62,20.55,29.63,29.15,28.89,28.19,28.63,29.03,29.4,19.22,13.1,8.19],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12","13":"B13"},false]],"4039":[["SECC1",107.43,null,[28.26,26.7,26.05,26.41],{"1":"B1","2":"B2","3":"B3","4":"B4"},false],["SECC2",133.2,552,[27.13,27.05,27.02,25.65,26.34],{"1":"C1","2":"C2","3":"C3","4":"B4","5":"B5"},false],["SECC3",105.92,465,[27.29,27.09,25.54,26.01],{"1":"C1","2":"C2","3":"B3","4":"B4"},false],["SECC4",133.81,459,[27.2,27.21,27.25,25.7,26.44],{"1":"C1","2":"C2","3":"C3","4":"B4","5":"B5"},false],["SECC5",105.77,499,[26.94,26.4,25.85,26.58],{"1":"B1","2":"B2","3":"B3","4":"B4"},false],["SECC6",106.78,568,[27.48,26.54,25.88,26.89],{"1":"B1","2":"B2","3":"B3","4":"B4"},false],["SECC7",108.7,519,[28.45,27.02,26.51,26.71],{"1":"B1","2":"B2","3":"B3","4":"B4"},false],["SECC8",108.96,520,[28.2,26.78,26.95,27.04],{"1":"B1","2":"B2","3":"B3","4":"B4"},false],["SECC9",110.46,578,[28.5,27.1,27.16,27.7],{"1":"B1","2":"B2","3":"B3","4":"B4"},false],["SECC10",111.78,591,[28.47,27.47,27.5,28.35],{"1":"B1","2":"B2","3":"B3","4":"B4"},false]],"4062-1475":[["SECC1",220.28,null,[8.12,12.75,19.03,28.16,27.69,27.57,28.04,27.53,20.1,12.66,8.63],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11"},false],["SECC2",208.13,2161,[7.3,16.44,27.3,26.23,26.19,26.28,27.27,27.93,15.04,8.15],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10"},false],["AUX2",115.24,966,[10.56,22.73,27.24,27.68,17.34,9.69],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6"},false],["SECC3",203.32,944,[8.14,17.16,27.35,26.83,26.88,26.83,27.17,22.64,12.2,8.13],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10"},false],["AUX3",113.7,686,[10.35,22.17,27.08,28.03,16.32,9.75],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6"},false],["SECC4",225.27,1247,[7.26,11.56,21.03,27.1,27.41,27.37,27.53,27.31,25.84,14.21,8.65],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11"},false],["SECC5",237.49,3055,[7.22,11.48,18.19,27.49,27.18,26.71,26.72,27.19,27.76,18.27,11.32,7.97],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12"},false],["SECC6",237.6,2629,[7.15,11.5,18.28,27.53,26.92,26.63,26.65,27.31,27.83,18.24,11.69,7.86],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12"},false],["SECC7",237.3,3131,[7.2,11.58,18.4,27.44,26.92,26.62,26.72,27.21,27.72,18.08,11.55,7.88],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12"},false],["SECC8",238.05,2646,[7.27,11.65,18.51,27.53,26.87,26.78,26.87,27.29,27.79,17.95,11.5,8.05],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12"},false],["SECC9",237.74,3114,[7.58,11.91,18.71,27.42,26.92,26.65,26.77,27.01,27.64,17.85,11.46,7.81],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12"},false],["SECC10",237.47,2618,[7.65,11.84,18.73,27.49,27.05,26.49,26.69,27.08,27.67,17.7,11.28,7.81],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12"},false],["SECC11",237.77,3063,[7.6,11.94,18.83,27.35,26.9,26.69,26.84,27.08,27.63,17.74,11.4,7.76],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12"},false],["SECC12",237.02,2583,[7.54,11.94,18.85,27.36,26.9,26.65,26.76,27.09,27.52,17.6,11.23,7.57],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12"},false],["SECC13",236.4,3028,[7.71,12.04,18.92,27.24,26.71,26.51,26.64,26.9,27.45,17.56,11.19,7.54],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12"},false],["SECC14",236.0,2538,[7.49,11.98,19.0,27.24,26.82,26.54,26.63,26.92,27.4,17.49,11.11,7.38],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12"},false],["SECC15",235.56,2984,[7.48,12.03,19.07,27.07,26.62,26.39,26.49,26.78,27.44,17.54,11.17,7.47],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12"},false],["SECC16",234.95,2508,[7.47,12.01,19.04,27.07,26.55,26.35,26.49,26.7,27.32,17.45,11.09,7.42],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12"},false],["SECC17",233.25,2592,[7.49,12.04,19.09,26.9,26.23,26.09,26.02,26.26,27.23,17.4,11.07,7.43],{"1":"B1","2":"B2","3":"B3","4":"B4","5":"B5","6":"B6","7":"B7","8":"B8","9":"B9","10":"B10","11":"B11","12":"B12"},false]]};
+const META=[
+ {id:"4062-1475",proj:"P037",name:"ST_4062 1475-1445",code:"ST_4062_1475-1445"},
+ {id:"4058",proj:"P041",name:"ST_4058 1505-1475",code:"ST_4058_1505-1475"},
+ {id:"4062-1505",proj:"P047",name:"ST_4062 1505-1475",code:"ST_4062_1505-1475"},
+ {id:"4057",proj:"P053",name:"ST_4057 1415 ASC",code:"ST_4057_1415_ASC"},
+ {id:"4039",proj:"P064",name:"ST_4039 1580-1550",code:"ST_4039_1580-1550"},
+ {id:"4026",proj:"P065",name:"ST_4026 1850 ASC",code:"ST_4026_1850_ASC"}
+];
+function buildStope(M,data){
+  const rows=data.map(([s,m,t,lens,slots,est])=>{
+    const raw=lens.reduce((a,b)=>a+b,0)||1, f=m/raw;
+    return {s,m,t,tpm:t?t/m:0,est:!!est,nb:t==null,holes:lens.map((l,i)=>({n:i+1,label:(slots&&slots[i+1])||String(i+1),len:l*f,shown:l}))};
+  });
+  /* Secciones sin tonelaje en la tabla longitudinal: metros de su hoja de sección y ton/m de la SECC2 */
+  const ref=rows.find(r=>r.s==="SECC2"&&r.t)||rows.find(r=>r.t);
+  rows.forEach(r=>{ if(r.t==null&&ref){ r.tpm=ref.tpm; r.t=r.m*ref.tpm; r.tEst=ref.s; r.nb=false; } });
+  const act=rows.filter(d=>!d.nb);
+  return Object.assign({},M,{rows,act,by:Object.fromEntries(rows.map(d=>[d.s,d])),
+    maxm:Math.max(...rows.map(d=>d.m)),maxh:Math.max(...rows.map(d=>d.holes.length)),totM:act.reduce((a,d)=>a+d.m,0),
+    totT:act.reduce((a,d)=>a+(d.t||0),0),totH:act.reduce((a,d)=>a+d.holes.length,0)});
+}
+const BASE=META.map(M=>buildStope(Object.assign({base:true},M),DATA[M.id]));
+let extra=[], STOPES=BASE.slice(), SBY=Object.fromEntries(STOPES.map(S=>[S.id,S]));
+function rebuildStopes(list){
+  extra=[];
+  for(const p of list){
+    try{
+      if(!p||!Array.isArray(p.secciones)||!p.secciones.length) continue;
+      const data=p.secciones.map(x=>[String(x.s),+x.m,(x.t==null||x.t==="")?null:+x.t,(x.l||[]).map(Number),x.lab||null,false]).filter(r=>r[3].length&&r[1]>0);
+      if(!data.length) continue;
+      extra.push(buildStope({id:p._id,proj:String(p.proj||""),name:String(p.name||p.code||"Proyecto"),code:String(p.code||p.name||"Proyecto"),nuevo:true,por:p.por||"",creado:p.creado||0},data));
+    }catch(_){}
+  }
+  STOPES=BASE.concat(extra).sort((a,b)=>String(a.proj).localeCompare(String(b.proj),"es",{numeric:true}));
+  SBY=Object.fromEntries(STOPES.map(S=>[S.id,S]));
+  if(SBY[cur.id]) cur=SBY[cur.id];
+}
+const LABEL={P:"falta por barrenar",B:"barrenado",T:"tumbado",U:"cargando",X:"no se barrena"};
+const ACT={B:"Barrenado",T:"Tumbado",P:"Corregido a por barrenar",I:"Carga inicial",F:"Proyecto finalizado",A:"Proyecto eliminado",R:"Proyecto restaurado",N:"Proyecto agregado"};
+const ZEST={finalizado:"Finalizado",archivado:"Eliminado"};
+const MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const TURNO={T1:"Turno 1",T2:"Turno 2"};
+const BASE_EQ=["RPT-68","RPT-133","RPT-138","SB-92","SB-102"];
+const allEq=()=>BASE_EQ.slice();
+
+const $=id=>document.getElementById(id);
+const fmt=(n,d=0)=>Number(n).toLocaleString("es-MX",{minimumFractionDigits:d,maximumFractionDigits:d});
+const key=(s,n)=>s+"|"+n;
+const r2=(n,d)=>Math.round(n*Math.pow(10,d))/Math.pow(10,d);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const lsGet=k=>{ try{ return localStorage.getItem(k); }catch(_){ return null; } };
+const lsSet=(k,v)=>{ try{ localStorage.setItem(k,v); }catch(_){} };
+/* ST_4057 conserva sus documentos originales (SECC1...); los demás rebajes usan el prefijo ST<id>__ */
+const docId=(sid,s)=>sid==="4057"?s:"ST"+sid+"__"+s;
+function parseDoc(id){ const i=id.indexOf("__"); return i<0?["4057",id]:[id.slice(2,i),id.slice(i+2)]; }
+const logStope=e=>String((e&&e.rebaje)||"4057");
+
+let zonas={}, zonasOk=false, viewClosed=false, switchedOnce=false;
+let state={}, docs=new Set(), loaded=false, logs=[], db=null, uid=null, busy=false, readOnly=false, manager=false;
+const owner=false; /* Sin "Corregir a por barrenar" ni editar/eliminar registros en esta versión */
+let myName=(lsGet("barr_nombre")||"").trim();
+const sel=new Set();
+let cur=SBY["4057"];
+const savedId=lsGet("barr_rebaje");
+if(savedId&&SBY[savedId]) cur=SBY[savedId];
+const firstSec=S=>(S.act[0]||S.rows[0]).s;
+let formSec=firstSec(cur);
+const mq=window.matchMedia?window.matchMedia("(max-width:1023px)"):{matches:false};
+
+const isClosed=S=>{ const z=S&&zonas[S.id]; return !!(z&&ZEST[z.estatus]); };
+const activeStopes=()=>STOPES.filter(S=>!isClosed(S));
+function mesTxt(m){ if(!m) return ""; const [y,mm]=m.split("-"); return (MESES[+mm-1]||mm)+" "+y; }
+function st(S,s,n){ const d=S.by[s]; if(d&&d.nb) return "X"; if(!loaded) return "U"; const z=state[S.id], h=z&&z[s]; return (h&&h[n])||"P"; }
+function opDate(){ const d=new Date(); if(d.getHours()<7) d.setDate(d.getDate()-1); return ymd(d); }
+function ymd(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function dmy(s){ if(!s||typeof s!=="string") return "—"; const p=s.split("-"); return p.length===3?p[2]+"/"+p[1]+"/"+p[0]:s; }
+function hhmm(ts){ if(!ts) return ""; const d=new Date(ts); return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
+function initials(n){ const p=String(n||"").trim().split(/\s+/).filter(Boolean); return ((p[0]||"?")[0]+((p[1]||"")[0]||"")).toUpperCase(); }
+
+/* ---------- Cálculos ---------- */
+function metrics(S){
+  const r={mB:0,mP:0,mT:0,mA:0,hB:0,hT:0,hP:0,tB:0,tT:0,tA:0,sec:{}};
+  for(const d of S.rows){
+    const x={mB:0,tB:0,mP:0,mT:0,tT:0,mA:0};
+    r.sec[d.s]=x;
+    if(d.nb) continue;
+    for(const o of d.holes){
+      const s=st(S,d.s,o.n), ton=o.len*d.tpm;
+      if(s==="B"||s==="T"){
+        r.mA+=o.len; r.tA+=ton; x.mA+=o.len;
+        if(s==="B"){ r.hB++; r.mB+=o.len; r.tB+=ton; x.mB+=o.len; x.tB+=ton; }
+        else { r.hT++; r.mT+=o.len; r.tT+=ton; x.mT+=o.len; x.tT+=ton; }
+      } else if(s==="P"){ r.mP+=o.len; r.hP++; x.mP+=o.len; }
+    }
+    r.sec[d.s]=x;
+  }
+  return r;
+}
+
+/* ---------- Render ---------- */
+function renderHead(){
+  $("hTitle").textContent=cur.code;
+  document.title=cur.code+" avance";
+  const est=cur.rows.filter(d=>d.est), nb=cur.rows.filter(d=>d.nb), te=cur.rows.filter(d=>d.tEst), n=$("estNote"), msg=[];
+  if(nb.length) msg.push(nb.map(d=>d.s.replace("SECC","SECC ")).join(", ")+": no se barrena, terreno inestable sin mineral. No cuenta en metros, barrenos ni toneladas.");
+  if(est.length) msg.push("* "+est.map(d=>d.s).join(", ")+": metros repartidos en partes iguales hasta recibir la hoja de sección.");
+  n.hidden=!msg.length; n.textContent=msg.join(" ");
+}
+function renderWho(){
+  $("whoAv").textContent=myName?initials(myName):"?";
+  $("whoNm").textContent=myName||"Sin nombre";
+  $("regName").textContent=myName||"—";
+  $("actP").hidden=!owner;
+  $("acts").style.setProperty("--n",owner?3:2);
+  if(!owner){ const p=document.querySelector('input[name="act"][value="P"]'); if(p&&p.checked){ document.querySelector('input[name="act"][value="B"]').checked=true; } }
+}
+function renderTabs(){
+  const list=activeStopes(), np=(manager&&db)?'<button type="button" class="npbtn" data-np="1">+ Nuevo proyecto</button>':'';
+  if(!list.length){ $("tabs").innerHTML='<p class="notabs">No hay proyectos activos. Agrega uno nuevo o consulta el Historial.</p>'+np; return; }
+  $("tabs").innerHTML=list.map(S=>{
+    const M=metrics(S), on=S===cur;
+    const pB=loaded?M.mA/S.totM*100:0, pT=loaded?M.mT/S.totM*100:0;
+    const txt=loaded?fmt(pB,1)+" % de avance":"Cargando";
+    return '<button type="button" role="tab" class="tab" id="tab-'+S.id+'" aria-selected="'+on+'" tabindex="'+(on?0:-1)+'" data-id="'+S.id+'">'+
+      '<span class="tp">'+S.proj+'</span><span class="tn">'+S.name+'</span><span class="tpct">'+txt+'</span>'+
+      '<span class="tbar"><i style="width:'+pT+'%;background:var(--tumb)"></i><i style="width:'+(pB-pT)+'%;background:var(--barr)"></i><i style="width:'+(loaded?100-pB:0)+'%;background:var(--pend)"></i></span></button>';
+  }).join("")+np;
+}
+function renderKpis(M){
+  const S=cur, u=(v,unit)=>v+(unit?"<small>"+unit+"</small>":"");
+  if(!loaded){ ["kMB","kMP","kHB","kHT","kTB","kTT"].forEach(id=>$(id).textContent="—"); return; }
+  $("kMB").innerHTML=u(fmt(M.mB,2),"m");
+  $("kMP").innerHTML=u(fmt(M.mP,2),"m");
+  $("kHB").innerHTML=u(fmt(M.hB),"");
+  $("kHT").innerHTML=u(fmt(M.hT),"");
+  $("kTB").innerHTML=u(fmt(M.tB),"t");
+  $("kTT").innerHTML=u(fmt(M.tT),"t");
+  const b=$("bar").children;
+  b[0].style.width=(M.mT/S.totM*100)+"%";
+  b[1].style.width=(M.mB/S.totM*100)+"%";
+  b[2].style.width=(M.mP/S.totM*100)+"%";
+  $("bar").setAttribute("aria-label","Avance: "+fmt(M.mA,2)+" m barrenados o tumbados de "+fmt(S.totM,2)+" m");
+}
+function holeBtn(d,o){
+  const s=st(cur,d.s,o.n), k=key(d.s,o.n);
+  const tip=d.s+" barreno "+o.label+": "+fmt(o.shown,2)+" m"+(d.est?" (estimado)":"")+(d.t?", "+fmt(o.len*d.tpm,1)+" t":"")+", "+LABEL[s];
+  return '<button type="button" class="hole st-'+s+'" data-s="'+d.s+'" data-n="'+o.n+'" aria-pressed="'+sel.has(k)+'" title="'+tip+'" aria-label="'+tip+'"'+(d.nb?' disabled':'')+'>'+o.label+'</button>';
+}
+function renderGrid(M){
+  const S=cur;
+  if(!mq.matches){
+    let h='<div class="row head"><span>Sección</span><span class="num">Metros</span><span class="num">Ton</span><span class="num">t/m</span><span>Barrenos</span><span class="num">m barrenados</span><span class="num">t barrenadas</span></div>';
+    for(const d of S.rows){
+      const x=M.sec[d.s];
+      const cols="";
+      h+='<div class="row'+(d.nb?' nbrow':'')+'"><button type="button" class="sec" data-sec="'+d.s+'"'+(d.nb?' disabled title="No se barrena"':' title="Seleccionar toda la sección"')+'>'+d.s.replace("SECC","SECC ")+(d.est?"*":"")+'</button>'+
+        '<span class="num">'+fmt(d.m,2)+'</span><span class="num">'+(d.t?fmt(d.t):"—")+'</span><span class="num">'+(d.t?fmt(d.tpm,2):"—")+'</span>'+
+        '<div><div class="holes">';
+      for(const o of d.holes) h+=holeBtn(d,o);
+      h+=d.nb?'</div></div><span class="nbtag">No barrenar</span></div>':'</div></div><span class="num">'+(loaded?fmt(x.mB,2):"—")+'</span><span class="num">'+(loaded&&d.t?fmt(x.tB):"—")+'</span></div>';
+    }
+    const tm=M.mT/S.totM*100, tb=M.mB/S.totM*100, tp=M.mP/S.totM*100;
+    h+='<div class="row total"><span>Total</span><span class="num">'+fmt(S.totM,2)+'</span><span class="num">'+fmt(S.totT)+'</span><span class="num">'+fmt(S.totT/S.totM,2)+'</span>'+
+      '<div class="minibar"><span style="width:'+tm+'%;background:var(--tumb)"></span><span style="width:'+tb+'%;background:var(--barr)"></span><span style="width:'+tp+'%;background:var(--pend)"></span></div>'+
+      '<span class="num">'+(loaded?fmt(M.mB,2):"—")+'</span><span class="num">'+(loaded?fmt(M.tB):"—")+'</span></div>';
+    $("grid").innerHTML=h; $("slist").innerHTML="";
+  } else {
+    let h="";
+    for(const d of S.rows){
+      const x=M.sec[d.s];
+      h+='<button type="button" class="srow'+(d.nb?' nbrow':'')+'" data-go="'+d.s+'"'+(d.nb?' disabled':'')+'><span class="sn">'+d.s.replace("SECC","SECC ")+(d.est?"*":"")+'</span><span class="sb">'+
+        d.holes.map(o=>'<i class="st-'+st(S,d.s,o.n)+'"></i>').join("")+
+        '</span><span class="sm">'+(d.nb?'<b class="nbtag">No barrenar</b>':'<b>'+(loaded?fmt(x.mB,1):"—")+' m</b><small>de '+fmt(d.m,1)+'</small>')+'</span></button>';
+    }
+    $("slist").innerHTML=h; $("grid").innerHTML="";
+  }
+}
+function currentAct(){ const r=document.querySelector('input[name="act"]:checked'); return r?r.value:"B"; }
+function plan(){
+  const S=cur, act=currentAct(), groups={}; let changes=0,skipped=0,m=0,t=0;
+  for(const k of sel){
+    const [s,ns]=k.split("|"), n=+ns, d=S.by[s], o=d&&d.holes[n-1];
+    if(!o) continue;
+    const c=st(S,s,n);
+    const ok=c!=="U"&&c!=="X"&&(act==="B"?c==="P":act==="T"?c==="B":c!=="P");
+    if(!ok){ skipped++; continue; }
+    (groups[s]||(groups[s]={n:[],prev:[]}));
+    groups[s].n.push(n); groups[s].prev.push(c);
+    changes++; m+=o.len; t+=o.len*d.tpm;
+  }
+  const items=S.rows.filter(d=>groups[d.s]).map(d=>{
+    const g=groups[d.s], idx=g.n.map((_,i)=>i).sort((a,b)=>g.n[a]-g.n[b]);
+    return {s:d.s,n:idx.map(i=>g.n[i]),prev:idx.map(i=>g.prev[i])};
+  });
+  return {act,items,changes,skipped,m,t};
+}
+function renderSecOptions(){
+  $("fSec").innerHTML=cur.act.map(d=>'<option value="'+d.s+'">'+d.s.replace("SECC","SECC ")+" ("+d.holes.length+" barrenos)</option>").join("");
+}
+function renderForm(){
+  let d=cur.by[formSec]; if(!d||d.nb) d=cur.act[0]||cur.rows[0];
+  formSec=d.s; $("fSec").value=formSec;
+  $("chips").innerHTML=d.holes.map(o=>holeBtn(d,o)).join("");
+  const per={};
+  for(const k of sel){ const [s,n]=k.split("|"); (per[s]||(per[s]=[])).push(+n); }
+  const parts=cur.rows.filter(x=>per[x.s]).map(x=>"<b>"+x.s+"</b>: "+per[x.s].sort((a,b)=>a-b).map(n=>x.holes[n-1].label).join(", "));
+  $("selSum").innerHTML=parts.length?"Seleccionados: "+parts.join("; "):"Toca los barrenos para seleccionarlos.";
+  const p=plan(), pv=$("preview");
+  pv.className="preview";
+  if(!loaded){ pv.textContent="Cargando el estado del rebaje."; }
+  else if(!sel.size){ pv.hidden=true; }
+  if(loaded&&sel.size){
+    pv.hidden=false;
+    const verb={B:"como barrenados",T:"como tumbados",P:"de regreso a por barrenar"}[p.act];
+    const why={B:"ya están barrenados o tumbados",T:"todavía no están barrenados",P:"ya están por barrenar"}[p.act];
+    let txt="";
+    if(p.changes){ txt=p.changes+(p.changes===1?" barreno ":" barrenos ")+verb+": "+fmt(p.m,2)+" m"+(p.t?" y "+fmt(p.t,1)+" t":"")+"."; pv.className="preview ok"; }
+    if(p.skipped) txt+=(txt?" ":"")+"Se omiten "+p.skipped+(p.skipped===1?" que ":" que ")+why+".";
+    if(!p.changes) pv.className="preview err";
+    pv.textContent=txt;
+  } else if(!loaded){ pv.hidden=false; }
+  $("eqWrap").hidden=p.act!=="B";
+  if(isClosed(cur)){ pv.hidden=false; pv.className="preview err"; pv.textContent="Este proyecto está en el Historial ("+ZEST[zonas[cur.id].estatus].toLowerCase()+"). No admite registros."; }
+  $("go").disabled=busy||readOnly||!loaded||!p.changes||isClosed(cur);
+  $("go").textContent=busy?"Guardando":(p.changes?"Registrar "+p.changes+(p.changes===1?" barreno":" barrenos"):"Registrar avance");
+}
+function curLogs(){ return logs.filter(e=>logStope(e)===cur.id); }
+function renderToday(){
+  const f=opDate(), es=curLogs().filter(e=>e.fecha===f);
+  const mb=es.filter(e=>e.actividad==="B").reduce((a,e)=>a+(+e.metros||0),0);
+  const tb=es.filter(e=>e.actividad==="B").reduce((a,e)=>a+(+e.ton||0),0);
+  const ht=es.filter(e=>e.actividad==="T").reduce((a,e)=>a+(+e.barrenos||0),0);
+  $("today").innerHTML="Hoy "+dmy(f)+": <b>"+fmt(mb,2)+" m</b> barrenados ("+fmt(tb)+" t) y <b>"+ht+"</b> "+(ht===1?"barreno tumbado":"barrenos tumbados")+".";
+}
+function itemsText(e,S){
+  const items=Array.isArray(e.items)?e.items:[];
+  return items.map(it=>{
+    const d=S&&S.by[it.s], ns=Array.isArray(it.n)?it.n:[];
+    return String(it.s).replace("SECC","SECC ")+": "+ns.map(n=>d&&d.holes[n-1]?d.holes[n-1].label:n).join(", ");
+  }).join("; ");
+}
+function renderLog(){
+  const f=$("logDate").value, all=curLogs();
+  $("logCount").textContent=all.length?"("+all.length+(all.length===1?" registro)":" registros)"):"";
+  const list=f?all.filter(e=>e.fecha===f):all;
+  const ol=$("logList");
+  if(!list.length){ ol.innerHTML='<p class="empty">'+(f?"Sin avances registrados el "+dmy(f)+".":"Aún no hay avances registrados en este rebaje.")+'</p>'; return; }
+  ol.innerHTML=list.slice(0,200).map(e=>{
+    const a=ACT[e.actividad]?e.actividad:"I", txt=itemsText(e,cur);
+    return '<li class="ent e-'+a+'">'+
+      '<div class="ewho"><b>'+esc(e.supervisor||"Sin nombre")+'</b>'+esc(dmy(e.fecha)+(TURNO[e.turno]?", "+TURNO[e.turno]:"")+(e.ts&&a!=="I"?", "+hhmm(e.ts):""))+'</div>'+
+      '<div class="ewhat"><span class="ea">'+(ACT[e.actividad]||"Registro")+'</span>'+(e.equipo?' <span class="eq">'+esc(e.equipo)+'</span>':'')+(txt?" "+esc(txt):"")+
+        (e.comentario?'<p>'+esc(e.comentario)+'</p>':'')+(e.editado?'<span class="ed">Editado</span>':'')+'</div>'+
+      '<div class="eside"><span>'+(["F","A","R"].includes(e.actividad)?(e.resumen?fmt(+e.resumen.mB||0,2)+' m de '+fmt(+e.resumen.totM||0,2)+' m ('+fmt(+e.resumen.pct||0,1)+' %)':''):(e.barrenos?e.barrenos+(e.barrenos===1?" barreno, ":" barrenos, "):"")+fmt(+e.metros||0,2)+' m, '+fmt(+e.ton||0)+' t')+'</span>'+
+        (owner&&db&&e._id&&!["F","A","R","N"].includes(e.actividad)?'<span class="eact"><button type="button" data-ed="'+esc(e._id)+'">Editar</button><button type="button" class="del" data-del="'+esc(e._id)+'">Eliminar</button></span>':'')+'</div>'+
+    '</li>';
+  }).join("");
+}
+function projStatus(M){
+  if(M.mA<=0) return ["ini","Sin iniciar"];
+  if(M.hP>0) return ["bar","En barrenación"];
+  if(M.hB>0) return ["lis","Listo para tumbar"];
+  return ["tum","Tumbado"];
+}
+function renderDash(){
+  const body=$("dashBody");
+  if(!loaded){ body.innerHTML='<p class="empty">Cargando…</p>'; return; }
+  const act=activeStopes(), D=act.map(S=>({S,M:metrics(S),st:projStatus(metrics(S)),last:logs.filter(e=>logStope(e)===S.id&&["B","T","P"].includes(e.actividad)).reduce((a,e)=>Math.max(a,e.ts||0),0)}));
+  const T=D.reduce((a,d)=>{ for(const k of ["mA","mB","mT","mP","hB","hT","hP","tB","tT"]) a[k]+=d.M[k]; a.totM+=d.S.totM; a.totT+=d.S.totT; a.totH+=d.S.totH; return a; },{mA:0,mB:0,mT:0,mP:0,hB:0,hT:0,hP:0,tB:0,tT:0,totM:0,totT:0,totH:0});
+  const pc=T.totM?T.mA/T.totM*100:0, pB=T.totM?T.mB/T.totM*100:0, pT=T.totM?T.mT/T.totM*100:0;
+  const cnt={ini:0,bar:0,lis:0,tum:0}; D.forEach(d=>cnt[d.st[0]]++);
+  const f=opDate(), mes=f.slice(0,7);
+  const card=(c,l,v,u,s,cls)=>'<div class="dkc'+(cls?" "+cls:"")+'" style="--c:'+c+'"><span class="l">'+l+'</span><b>'+v+(u?'<small>'+u+'</small>':'')+'</b>'+(s?'<span class="s">'+s+'</span>':'')+'</div>';
+  let h='<div class="dk">'+
+    '<div class="dkc big"><span class="l">Avance general</span><b>'+fmt(pc,1)+'<small>%</small></b><span class="s">'+fmt(T.mA,1)+' de '+fmt(T.totM,1)+' m</span><div class="dbar"><i style="width:'+pT+'%;background:var(--tumb)"></i><i style="width:'+pB+'%;background:var(--barr)"></i></div></div>'+
+    card("var(--barr)","Metros barrenados",fmt(T.mB,1),"m","sin tumbar")+
+    card("var(--pend)","Metros por barrenar",fmt(T.mP,1),"m",fmt(T.hP)+" barrenos")+
+    card("var(--barr)","Barrenos listos",fmt(T.hB),"","sin tumbar")+
+    card("var(--tumb)","Barrenos tumbados",fmt(T.hT),"","de "+fmt(T.totH))+
+    card("var(--navy)","Tonelaje barrenado",fmt(T.tB),"t","sin tumbar")+
+    card("var(--tumb)","Tonelaje tumbado",fmt(T.tT),"t","de "+fmt(T.totT)+" t")+
+  '</div>';
+  h+='<div class="dmid">'+[["ini","#9AA3AE","Sin iniciar"],["bar","var(--brand)","En barrenación"],["lis","var(--barr)","Listos para tumbar"],["tum","var(--tumb)","Tumbados"]].map(([k,c,l])=>'<div class="dst"><i style="background:'+c+'"></i><b>'+cnt[k]+'</b><span>'+l+'</span></div>').join("")+'</div>';
+  if(!D.length){ h+='<p class="empty">No hay proyectos activos.</p>'; }
+  else{
+    h+='<div class="dtab"><div class="drow dh"><span>Proyecto</span><span>Rebaje</span><span>Estatus</span><span>Avance</span><span>Avance tumbado</span><span class="num">m barrenados</span><span class="num">m por barrenar</span><span class="num">t barrenadas</span><span class="num">t tumbadas</span></div>';
+    for(const d of D){ const M=d.M, S=d.S, p=S.totM?M.mA/S.totM*100:0;
+      h+='<button type="button" class="drow" data-go="'+esc(S.id)+'" title="Ver '+esc(S.name)+'"><span>'+esc(S.proj)+'</span><span class="n">'+esc(S.name)+'</span><span><em class="badge s-'+d.st[0]+'">'+d.st[1]+'</em></span>'+
+        '<span class="pb"><span class="dbar"><i style="width:'+(M.mT/S.totM*100)+'%;background:var(--tumb)"></i><i style="width:'+(M.mB/S.totM*100)+'%;background:var(--barr)"></i></span><span>'+fmt(p,1)+'%</span></span>'+'<span class="pb"><span class="dbar tb"><i style="width:'+(S.totM?M.mT/S.totM*100:0)+'%;background:var(--tumb)"></i></span><span>'+fmt((S.totM?M.mT/S.totM*100:0),1)+'%</span></span>'+
+        '<span class="num">'+fmt(M.mB,1)+'</span><span class="num">'+fmt(M.mP,1)+'</span><span class="num">'+fmt(M.tB)+'</span><span class="num">'+fmt(M.tT)+'</span></button>';
+    }
+    h+='<div class="drow dtot"><span></span><span>Total</span><span></span><span class="pb"><span class="dbar"><i style="width:'+pT+'%;background:var(--tumb)"></i><i style="width:'+pB+'%;background:var(--barr)"></i></span><span>'+fmt(pc,1)+'%</span></span>'+'<span class="pb"><span class="dbar tb"><i style="width:'+pT+'%;background:var(--tumb)"></i></span><span>'+fmt(pT,1)+'%</span></span>'+
+      '<span class="num">'+fmt(T.mB,1)+'</span><span class="num">'+fmt(T.mP,1)+'</span><span class="num">'+fmt(T.tB)+'</span><span class="num">'+fmt(T.tT)+'</span></div></div>';
+  }
+  body.innerHTML=h;
+  $("dashSub").textContent=D.length+(D.length===1?" proyecto activo":" proyectos activos")+", "+fmt(pc,1)+" % de avance";
+}
+function renderAll(){ const M=metrics(cur); renderDash(); renderTabs(); renderZona(M); renderKpis(M); renderGrid(M); renderForm(); }
+function renderZona(M){
+  const z=zonas[cur.id], c=isClosed(cur), b=$("zbar");
+  $("closeBtn").hidden=!(manager&&db&&!c&&loaded);
+  if(!c){ b.hidden=true; return; }
+  b.hidden=false;
+  const f=z.fecha?dmy(ymd(new Date(z.fecha))):"";
+  b.className="zbar z-"+z.estatus;
+  b.innerHTML='<div><b>'+esc(cur.name)+': proyecto '+ZEST[z.estatus].toLowerCase()+'</b><span>'+(f?" el "+f:"")+(z.por?" por "+esc(z.por):"")+'. Solo consulta, no admite registros.'+(z.comentario?" "+esc(z.comentario):"")+'</span></div>'+
+    '<div class="zbtns">'+(activeStopes().length?'<button type="button" data-z="volver">Volver a proyectos activos</button>':'')+(manager&&db?'<button type="button" class="zre" data-z="reactivar">Restaurar proyecto</button>':'')+'</div>';
+}
+function showTab(){ const c=$("tabs"), t=$("tab-"+cur.id); if(c&&t&&c.scrollWidth>c.clientWidth) c.scrollLeft=Math.max(0,t.offsetLeft-c.offsetLeft-16); }
+
+/* ---------- Navegación ---------- */
+function setView(v){
+  $("app").dataset.view=v;
+  document.querySelectorAll("#bnav button").forEach(b=>b.setAttribute("aria-current",b.dataset.v===v?"page":"false"));
+  if(mq.matches) window.scrollTo(0,0);
+}
+$("bnav").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) setView(b.dataset.v); });
+function switchStope(id,fromHist){
+  if(!SBY[id]) return;
+  viewClosed=!!fromHist&&isClosed(SBY[id]);
+  if(SBY[id]===cur){ renderAll(); return; }
+  cur=SBY[id]; sel.clear(); formSec=firstSec(cur); if(!isClosed(cur)) lsSet("barr_rebaje",id);
+  renderHead(); renderSecOptions(); renderAll(); renderLog(); renderToday();
+}
+function ensureActive(){
+  if(isClosed(cur)&&!viewClosed){ const L=activeStopes(); if(L.length) switchStope(L[0].id); else renderAll(); }
+}
+$("tabs").addEventListener("click",e=>{ if(e.target.closest("[data-np]")){ openNp(); return; } const b=e.target.closest(".tab"); if(!b) return; switchStope(b.dataset.id); const t=$("tab-"+cur.id); if(t){ t.focus(); t.scrollIntoView({block:"nearest",inline:"nearest"}); } });
+$("tabs").addEventListener("keydown",e=>{
+  if(e.key!=="ArrowRight"&&e.key!=="ArrowLeft") return;
+  const L=activeStopes(); if(!L.length) return;
+  const i=Math.max(0,L.indexOf(cur)), j=(i+(e.key==="ArrowRight"?1:-1)+L.length)%L.length;
+  e.preventDefault(); switchStope(L[j].id); const t=$("tab-"+cur.id); if(t) t.focus();
+});
+if(mq.addEventListener) mq.addEventListener("change",renderAll);
+
+/* ---------- Selección ---------- */
+function toggleHole(s,n){ if(isClosed(cur)||(cur.by[s]&&cur.by[s].nb)) return; const k=key(s,n); sel.has(k)?sel.delete(k):sel.add(k); formSec=s; }
+function toggleSection(s){ if(isClosed(cur)||cur.by[s].nb) return; const d=cur.by[s], all=d.holes.every(o=>sel.has(key(s,o.n))); d.holes.forEach(o=>all?sel.delete(key(s,o.n)):sel.add(key(s,o.n))); formSec=s; }
+function refocus(q){ const el=document.querySelector(q); if(el) el.focus({preventScroll:true}); }
+$("grid").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return; let q;
+  if(b.dataset.sec){ toggleSection(b.dataset.sec); q='#grid .sec[data-sec="'+b.dataset.sec+'"]'; }
+  else if(b.dataset.s){ toggleHole(b.dataset.s,+b.dataset.n); q='#grid .hole[data-s="'+b.dataset.s+'"][data-n="'+b.dataset.n+'"]'; }
+  else return;
+  renderAll(); refocus(q);
+});
+$("slist").addEventListener("click",e=>{ const b=e.target.closest(".srow"); if(!b||b.disabled) return; formSec=b.dataset.go; renderForm(); setView("reg"); });
+$("chips").addEventListener("click",e=>{ const b=e.target.closest(".hole"); if(!b) return; toggleHole(b.dataset.s,+b.dataset.n); renderAll(); refocus('#chips .hole[data-n="'+b.dataset.n+'"]'); });
+$("fSec").addEventListener("change",e=>{ formSec=e.target.value; renderForm(); });
+$("quick").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  const q=b.dataset.q, d=cur.by[formSec];
+  if(q==="none") sel.clear();
+  else if(q==="all") d.holes.forEach(o=>sel.add(key(d.s,o.n)));
+  else d.holes.forEach(o=>{ if(st(cur,d.s,o.n)===q) sel.add(key(d.s,o.n)); });
+  renderAll();
+});
+document.querySelectorAll('input[name="act"]').forEach(r=>r.addEventListener("change",renderForm));
+$("logDate").addEventListener("change",renderLog);
+$("logAll").addEventListener("click",()=>{ $("logDate").value=""; renderLog(); });
+
+let toastT;
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("on"),3200); }
+function previewError(msg){ const pv=$("preview"); pv.hidden=false; pv.className="preview err"; pv.textContent=msg; }
+function setSync(cls,txt){ const s=$("sync"); s.className="sync "+cls; s.textContent=txt; s.title=txt; }
+function setReadOnly(){
+  readOnly=true;
+  ["fFecha","fTurno","fCom","fSec","fEq"].forEach(id=>$(id).disabled=true);
+  document.querySelectorAll('input[name="act"],#quick button').forEach(x=>x.disabled=true);
+  const m=$("roMsg"); m.hidden=false; m.textContent="Tu acceso es de solo consulta. Pide al responsable acceso de colaborador para registrar avances.";
+  setSync("ro","Solo consulta");
+  renderForm();
+}
+
+/* ---------- Equipos ---------- */
+function fillEq(sel,first,extra){
+  const keep=sel.value, list=allEq().slice();
+  if(extra&&!list.includes(extra)) list.push(extra);
+  sel.innerHTML='<option value="">'+first+'</option>'+list.map(n=>'<option value="'+esc(n)+'">'+esc(n)+'</option>').join("");
+  if(keep&&list.includes(keep)) sel.value=keep;
+}
+function renderEq(){ fillEq($("fEq"),"Selecciona el equipo"); }
+
+/* ---------- Nombre ---------- */
+function openGate(){
+  $("gate").hidden=false; $("gErr").textContent="";
+  $("gName").value=myName||"";
+  setTimeout(()=>{ try{ $("gName").focus(); }catch(_){} },60);
+}
+$("gForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const n=$("gName").value.replace(/\s+/g," ").trim();
+  if(n.length<3){ $("gErr").textContent="Escribe tu nombre completo para continuar."; $("gName").focus(); return; }
+  myName=n.slice(0,60); lsSet("barr_nombre",myName);
+  $("gate").hidden=true; renderWho();
+  if(db&&uid&&!readOnly){ db.doc("data/users/"+uid+"/perfil").set({nombre:myName,actualizado:Date.now()}).catch(()=>{}); }
+});
+$("whoBtn").addEventListener("click",openGate);
+$("regChange").addEventListener("click",openGate);
+
+/* ---------- Guardado ---------- */
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function retry(fn){
+  try{ return await fn(); }
+  catch(e){ if(e&&e.code==="unavailable"){ await sleep(500+Math.random()*700); return await fn(); } throw e; }
+}
+async function patchSection(S,s,patch){
+  const id=docId(S.id,s), ref=db.doc("estado/"+id);
+  const full=()=>{ const f={}; S.by[s].holes.forEach(o=>{ const c=st(S,s,o.n); f[o.n]=c==="U"?"P":c; }); return Object.assign(f,patch); };
+  if(docs.has(id)){
+    try{ await retry(()=>ref.update({h:patch,actualizado:Date.now()})); }
+    catch(e){
+      if(e&&e.code==="invalid_argument"){ const g=await ref.get(); if(!g.exists){ await retry(()=>ref.set({h:full(),rebaje:S.id,actualizado:Date.now()})); return; } }
+      throw e;
+    }
+  } else await retry(()=>ref.set({h:full(),rebaje:S.id,actualizado:Date.now()}));
+}
+function saveError(err){
+  const c=err&&err.code;
+  if(c==="invalid_argument"){ setReadOnly(); return "Tu acceso no permite guardar cambios."; }
+  if(c==="quota_exceeded") return "El almacenamiento está lleno. Avisa al responsable.";
+  if(c==="revoked"){ setSync("error","Sin acceso"); return "Se retiró el acceso. Recarga la página."; }
+  return "No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.";
+}
+function resetForm(){
+  sel.clear(); $("fCom").value=""; $("fEq").value="";
+  $("fFecha").value=opDate();
+  const h=new Date().getHours(); $("fTurno").value=(h>=7&&h<19)?"T1":"T2";
+  const a=document.querySelector('input[name="act"][value="B"]'); if(a) a.checked=true;
+  formSec=firstSec(cur);
+}
+$("frm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  if(busy||readOnly||isClosed(cur)) return;
+  if(!myName){ openGate(); return; }
+  const S=cur, p=plan(), fecha=$("fFecha").value, com=$("fCom").value.trim();
+  if(!fecha) return previewError("Indica la fecha del avance.");
+  if(!p.changes) return previewError("No hay barrenos que cambien con esta actividad.");
+  if(p.act==="P"&&!owner) return previewError("Solo el responsable puede corregir barrenos.");
+  const equipo=p.act==="B"?$("fEq").value:"";
+  if(p.act==="B"&&!equipo){ $("fEq").focus(); return previewError("Selecciona el equipo con el que se barrenó."); }
+  if(p.act==="P"&&!com){ $("fCom").focus(); return previewError("Escribe en el comentario el motivo de la corrección."); }
+  const entry={ts:Date.now(),rebaje:S.id,rebajeCodigo:S.code,fecha,turno:$("fTurno").value,supervisor:myName,uid:uid||null,actividad:p.act,equipo,
+    items:p.items,barrenos:p.changes,metros:r2(p.m,2),ton:r2(p.t,1),comentario:com.slice(0,500)};
+  busy=true; renderForm();
+  try{
+    if(db){
+      for(const it of p.items){ const patch={}; it.n.forEach(n=>patch[n]=p.act); await patchSection(S,it.s,patch); }
+      await retry(()=>db.collection("bitacora").add(entry));
+    } else {
+      const z=state[S.id]||(state[S.id]={});
+      for(const it of p.items){ z[it.s]=Object.assign({},z[it.s]); it.n.forEach(n=>z[it.s][n]=p.act); }
+      logs=[Object.assign({_id:"local"+entry.ts},entry)].concat(logs);
+    }
+    resetForm();
+    toast((ACT[p.act]||"Avance")+" registrado: "+p.changes+(p.changes===1?" barreno, ":" barrenos, ")+fmt(p.m,2)+" m");
+    renderLog(); renderToday();
+  }catch(err){ previewError(saveError(err)); }
+  busy=false; renderAll();
+});
+
+/* ---------- Editar y eliminar (solo responsable) ---------- */
+const findLog=id=>logs.find(x=>x._id===id);
+let edId=null, delId=null;
+function openDlg(d){ if(d.showModal) d.showModal(); else d.setAttribute("open",""); }
+function closeDlg(d){ if(d.close) d.close(); else d.removeAttribute("open"); }
+document.querySelectorAll("dialog [data-close]").forEach(b=>b.addEventListener("click",()=>closeDlg(b.closest("dialog"))));
+$("logList").addEventListener("click",e=>{
+  if(!owner) return;
+  const b=e.target.closest("button"); if(!b) return;
+  if(b.dataset.ed){
+    const x=findLog(b.dataset.ed); if(!x) return; edId=x._id;
+    $("edInfo").textContent=(ACT[x.actividad]||"Registro")+(itemsText(x,SBY[logStope(x)])?": "+itemsText(x,SBY[logStope(x)]):"");
+    $("eFecha").value=x.fecha||""; $("eTurno").value=TURNO[x.turno]?x.turno:""; $("eNom").value=x.supervisor||""; $("eCom").value=x.comentario||"";
+    $("eEqWrap").hidden=x.actividad!=="B"; fillEq($("eEq"),"Sin equipo",x.equipo||""); $("eEq").value=x.equipo||"";
+    openDlg($("edDlg"));
+  } else if(b.dataset.del){
+    const x=findLog(b.dataset.del); if(!x) return; delId=x._id;
+    const S=SBY[logStope(x)], {revert,kept}=revertPlan(x,S);
+    let msg="Se eliminará el registro de "+(x.supervisor||"Sin nombre")+" del "+dmy(x.fecha)+".";
+    if(revert) msg+=" "+revert+(revert===1?" barreno regresa":" barrenos regresan")+" a su estado anterior.";
+    if(kept) msg+=" "+kept+(kept===1?" barreno tuvo":" barrenos tuvieron")+" cambios posteriores y se queda"+(kept===1?"":"n")+" como está"+(kept===1?"":"n")+".";
+    if(x.actividad==="I") msg+=" El estado de los barrenos no cambia.";
+    $("delInfo").textContent=msg;
+    openDlg($("delDlg"));
+  }
+});
+function revertPlan(x,S){
+  const patches={}; let revert=0, kept=0;
+  if(!S||!["B","T","P"].includes(x.actividad)||!Array.isArray(x.items)) return {patches,revert,kept};
+  for(const it of x.items){
+    if(!S.by[it.s]||S.by[it.s].nb||!Array.isArray(it.n)) continue;
+    it.n.forEach((n,i)=>{
+      if(st(S,it.s,n)===x.actividad){ (patches[it.s]||(patches[it.s]={}))[n]=(Array.isArray(it.prev)&&it.prev[i])||"P"; revert++; }
+      else kept++;
+    });
+  }
+  return {patches,revert,kept};
+}
+$("edForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const x=findLog(edId); if(!x||!db) return closeDlg($("edDlg"));
+  const nom=$("eNom").value.replace(/\s+/g," ").trim();
+  if(!nom){ $("eNom").focus(); return; }
+  $("edSave").disabled=true;
+  try{
+    await retry(()=>db.doc("bitacora/"+x._id).update({fecha:$("eFecha").value||x.fecha,turno:$("eTurno").value,supervisor:nom.slice(0,80),comentario:$("eCom").value.trim().slice(0,500),equipo:x.actividad==="B"?$("eEq").value:(x.equipo||""),editado:Date.now()}));
+    closeDlg($("edDlg")); toast("Registro actualizado");
+  }catch(err){ toast(saveError(err)); }
+  $("edSave").disabled=false;
+});
+$("delForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const x=findLog(delId); if(!x||!db) return closeDlg($("delDlg"));
+  const S=SBY[logStope(x)], {patches}=revertPlan(x,S);
+  $("delGo").disabled=true;
+  try{
+    for(const s of Object.keys(patches)) await patchSection(S,s,patches[s]);
+    await retry(()=>db.doc("bitacora/"+x._id).delete());
+    closeDlg($("delDlg")); toast("Registro eliminado");
+  }catch(err){ toast(saveError(err)); }
+  $("delGo").disabled=false;
+});
+
+/* ---------- Eliminar proyecto al historial (solo responsable) ---------- */
+function resumenDe(S){
+  const M=metrics(S);
+  return {mB:r2(M.mA,2),totM:r2(S.totM,2),pct:r2(S.totM?M.mA/S.totM*100:0,1),hB:M.hB+M.hT,hT:M.hT,totH:S.totH,tB:Math.round(M.tB),tT:Math.round(M.tT),totT:S.totT};
+}
+$("closeBtn").addEventListener("click",()=>{
+  if(!manager||!db||isClosed(cur)) return;
+  const R=resumenDe(cur), M=metrics(cur), full=M.hP===0;
+  $("czTitle").textContent="Eliminar "+cur.name;
+  $("czInfo").textContent="Avance actual: "+fmt(R.mB,2)+" m de "+fmt(R.totM,2)+" m ("+fmt(R.pct,1)+" %), "+R.hB+" de "+R.totH+" barrenos barrenados, "+R.hT+" tumbados; "+fmt(R.tB)+" t barrenadas sin tumbar y "+fmt(R.tT)+" t tumbadas.";
+  $("czNote").textContent=(full?"El proyecto está completo y quedará como Finalizado. ":"Faltan "+M.hP+(M.hP===1?" barreno":" barrenos")+" por barrenar; quedará como Eliminado con su avance actual. ")+"Deja de aparecer en los proyectos activos y se guarda en el Historial, donde puedes consultarlo o restaurarlo.";
+  $("czNote").className="";
+  $("czCom").value="";
+  openDlg($("czDlg"));
+});
+$("czForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  if(!manager||!db) return closeDlg($("czDlg"));
+  const S=cur, M=metrics(S), est=M.hP===0?"finalizado":"archivado", R=resumenDe(S), now=Date.now(), com=$("czCom").value.trim().slice(0,500);
+  $("czGo").disabled=true;
+  try{
+    await retry(()=>db.doc("zonas/"+S.id).set({estatus:est,fecha:now,mes:ymd(new Date(now)).slice(0,7),por:myName||"",uid:uid||null,comentario:com,resumen:R,rebajeCodigo:S.code}));
+    await retry(()=>db.collection("bitacora").add({ts:now,rebaje:S.id,rebajeCodigo:S.code,fecha:opDate(),turno:"",supervisor:myName||"",uid:uid||null,actividad:est==="finalizado"?"F":"A",items:[],barrenos:0,metros:0,ton:0,comentario:com,resumen:R}));
+    closeDlg($("czDlg")); toast(S.name+" se movió al Historial");
+    viewClosed=false; ensureActive();
+  }catch(err){ toast(saveError(err)); }
+  $("czGo").disabled=false;
+});
+let reId=null;
+function askReactivar(id){
+  if(!manager||!db||!SBY[id]) return;
+  reId=id; $("reInfo").textContent=SBY[id].name+" vuelve a los proyectos activos con el avance que tenía y se puede seguir registrando.";
+  openDlg($("reDlg"));
+}
+$("reForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const S=SBY[reId]; if(!S||!db) return closeDlg($("reDlg"));
+  $("reGo").disabled=true;
+  try{
+    await retry(()=>db.doc("zonas/"+S.id).delete());
+    await retry(()=>db.collection("bitacora").add({ts:Date.now(),rebaje:S.id,rebajeCodigo:S.code,fecha:opDate(),turno:"",supervisor:myName||"",uid:uid||null,actividad:"R",items:[],barrenos:0,metros:0,ton:0,comentario:""}));
+    closeDlg($("reDlg")); toast(S.name+" restaurado"); viewClosed=false; switchStope(S.id); setView("av");
+  }catch(err){ toast(saveError(err)); }
+  $("reGo").disabled=false;
+});
+$("zbar").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-z]"); if(!b) return;
+  if(b.dataset.z==="volver"){ viewClosed=false; const L=activeStopes(); if(L.length) switchStope(L[0].id); }
+  else if(b.dataset.z==="reactivar") askReactivar(cur.id);
+});
+
+/* ---------- Historial ---------- */
+function avanceMes(list){
+  const by={};
+  for(const e of list){
+    const id=logStope(e); if(!SBY[id]) continue;
+    const x=by[id]||(by[id]={m:0,t:0,ht:0,n:0});
+    if(e.actividad==="B"){ x.m+=+e.metros||0; x.t+=+e.ton||0; x.n++; }
+    else if(e.actividad==="T"){ x.ht+=+e.barrenos||0; x.n++; }
+    else if(e.actividad==="P"){ x.m-=+e.metros||0; x.t-=+e.ton||0; x.n++; }
+  }
+  return by;
+}
+function renderHist(){
+  const mes=$("hMes").value, body=$("histBody");
+  const mlogs=logs.filter(e=>typeof e.fecha==="string"&&(!mes||e.fecha.slice(0,7)===mes)&&["B","T","P"].includes(e.actividad));
+  const cerr=Object.entries(zonas).filter(([id,z])=>SBY[id]&&ZEST[z.estatus]&&(!mes||z.mes===mes)).sort((a,b)=>(b[1].fecha||0)-(a[1].fecha||0));
+  let h="";
+  if(mes){
+    const by=avanceMes(mlogs), ids=STOPES.map(S=>S.id).filter(id=>by[id]);
+    h+='<h3>Avance registrado en '+mesTxt(mes)+'</h3>';
+    if(!ids.length) h+='<p class="empty">Sin avances registrados en '+mesTxt(mes)+'.</p>';
+    else{
+      let T={m:0,t:0,ht:0,n:0};
+      h+='<div class="htab"><div class="hrow hhead"><span>Proyecto</span><span class="num">Metros barrenados</span><span class="num">Toneladas</span><span class="num">Barrenos tumbados</span><span class="num">Registros</span></div>';
+      for(const id of ids){ const x=by[id]; T.m+=x.m; T.t+=x.t; T.ht+=x.ht; T.n+=x.n;
+        h+='<div class="hrow"><span>'+esc(SBY[id].name)+(isClosed(SBY[id])?' <em class="zb z-'+zonas[id].estatus+'">'+ZEST[zonas[id].estatus]+'</em>':'')+'</span><span class="num">'+fmt(x.m,2)+'</span><span class="num">'+fmt(x.t)+'</span><span class="num">'+x.ht+'</span><span class="num">'+x.n+'</span></div>'; }
+      h+='<div class="hrow htot"><span>Total del mes</span><span class="num">'+fmt(T.m,2)+'</span><span class="num">'+fmt(T.t)+'</span><span class="num">'+T.ht+'</span><span class="num">'+T.n+'</span></div></div>';
+    }
+  } else {
+    const meses={};
+    for(const e of logs){ if(typeof e.fecha!=="string"||!["B","T","P"].includes(e.actividad)) continue; const k=e.fecha.slice(0,7); (meses[k]||(meses[k]=[])).push(e); }
+    for(const [id,z] of Object.entries(zonas)){ if(z.mes&&!meses[z.mes]) meses[z.mes]=[]; }
+    const ks=Object.keys(meses).sort().reverse();
+    h+='<h3>Resumen por mes</h3>';
+    if(!ks.length) h+='<p class="empty">Aún no hay avances registrados.</p>';
+    else{
+      h+='<div class="htab"><div class="hrow hhead"><span>Mes</span><span class="num">Metros barrenados</span><span class="num">Toneladas</span><span class="num">Barrenos tumbados</span><span class="num">Proyectos al historial</span></div>';
+      for(const k of ks){ const by=avanceMes(meses[k]); let m=0,t=0,ht=0; Object.values(by).forEach(x=>{m+=x.m;t+=x.t;ht+=x.ht;});
+        const zc=Object.values(zonas).filter(z=>z.mes===k&&ZEST[z.estatus]).length;
+        h+='<div class="hrow"><button type="button" class="lnk" data-mes="'+k+'">'+mesTxt(k)+'</button><span class="num">'+fmt(m,2)+'</span><span class="num">'+fmt(t)+'</span><span class="num">'+ht+'</span><span class="num">'+zc+'</span></div>'; }
+      h+='</div>';
+    }
+  }
+  h+='<h3>Proyectos enviados al historial'+(mes?' en '+mesTxt(mes):'')+'</h3>';
+  if(!cerr.length) h+='<p class="empty">'+(mes?'Ningún proyecto se envió al historial en '+mesTxt(mes)+'.':'Aún no hay proyectos en el historial.')+'</p>';
+  else h+='<ul class="zlist">'+cerr.map(([id,z])=>{ const S=SBY[id], R=z.resumen||{};
+    return '<li class="zcard z-'+z.estatus+'"><div class="zc1"><b>'+esc(S.name)+'</b><em class="zb z-'+z.estatus+'">'+ZEST[z.estatus]+'</em></div>'+
+      '<div class="zc2">'+(z.fecha?dmy(ymd(new Date(z.fecha))):"")+(z.por?", "+esc(z.por):"")+(z.comentario?'<p>'+esc(z.comentario)+'</p>':'')+'</div>'+
+      '<div class="zc3"><span><b>'+fmt(+R.mB||0,2)+'</b> de '+fmt(+R.totM||S.totM,2)+' m ('+fmt(+R.pct||0,1)+' %)</span><span><b>'+(R.hB||0)+'</b> de '+(R.totH||S.totH)+' barrenos, '+(R.hT||0)+' tumbados</span><span>'+(R.tT!=null?'<b>'+fmt(+R.tT||0)+'</b> t tumbadas, ':'')+'<b>'+fmt(+R.tB||0)+'</b> t barrenadas</span></div>'+
+      '<div class="zc4"><button type="button" data-ver="'+id+'">Consultar</button>'+(manager&&db?'<button type="button" class="zre" data-re="'+id+'">Restaurar</button>':'')+'</div></li>'; }).join("")+'</ul>';
+  body.innerHTML=h;
+}
+$("hMes").addEventListener("change",renderHist);
+$("dashBody").addEventListener("click",e=>{ const b=e.target.closest(".drow[data-go]"); if(!b) return; viewClosed=false; switchStope(b.dataset.go); const t=$("tab-"+b.dataset.go); if(t) t.scrollIntoView({behavior:"smooth",block:"start"}); });
+const _rh=renderHist; renderHist=function(){ _rh(); const n=Object.values(zonas).filter(z=>ZEST[z.estatus]).length; $("histCount").textContent=n?"("+n+(n===1?" proyecto)":" proyectos)"):""; };
+$("hAll").addEventListener("click",()=>{ $("hMes").value=""; renderHist(); });
+$("histBody").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  if(b.dataset.mes){ $("hMes").value=b.dataset.mes; renderHist(); }
+  else if(b.dataset.ver){ switchStope(b.dataset.ver,true); setView("av"); window.scrollTo(0,0); }
+  else if(b.dataset.re) askReactivar(b.dataset.re);
+});
+
+/* ---------- Nuevo proyecto desde PDF (solo responsable) ---------- */
+let sampleFn=null, pdfLib=null, npRows=[], npAbort=null, npFileName="";
+const PDFJS_M="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/";
+const PDFJS_U="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+function loadScript(src){ return new Promise((ok,ko)=>{ const s=document.createElement("script"); s.src=src; s.onload=ok; s.onerror=()=>ko({code:"pdfjs"}); document.head.appendChild(s); }); }
+async function getPdfLib(){
+  if(pdfLib) return pdfLib;
+  try{
+    const L=await import(PDFJS_M+"pdf.min.mjs");
+    if(!L||!L.getDocument) throw 0;
+    L.GlobalWorkerOptions.workerSrc=PDFJS_M+"pdf.worker.min.mjs";
+    pdfLib=L; return L;
+  }catch(_){}
+  if(!window.pdfjsLib) await loadScript(PDFJS_U+"pdf.min.js");
+  const L=window.pdfjsLib; if(!L) throw {code:"pdfjs"};
+  L.GlobalWorkerOptions.workerSrc=PDFJS_U+"pdf.worker.min.js";
+  pdfLib=L; return L;
+}
+async function pdfToImages(file,onp){
+  const L=await getPdfLib(), doc=await L.getDocument({data:await file.arrayBuffer()}).promise, out=[];
+  for(let i=1;i<=doc.numPages;i++){
+    onp(i,doc.numPages);
+    const pg=await doc.getPage(i), v0=pg.getViewport({scale:1}), vp=pg.getViewport({scale:Math.min(3,2000/v0.width)});
+    const c=document.createElement("canvas"); c.width=Math.round(vp.width); c.height=Math.round(vp.height);
+    const ctx=c.getContext("2d"); ctx.fillStyle="#fff"; ctx.fillRect(0,0,c.width,c.height);
+    await pg.render({canvasContext:ctx,viewport:vp}).promise;
+    out.push(await new Promise(r=>c.toBlob(r,"image/jpeg",0.88)));
+  }
+  return out;
+}
+function npPrompt(a,b,n){
+  return "Estas "+n+" imágenes son las páginas "+a+" a "+b+" (en orden) de un plano de barrenación larga de una mina subterránea (Aura Minerals, mina Aranzazu). "+
+  "Lee cada página y responde SOLO con JSON con esta forma exacta:\n"+
+  '{"paginas":[{"pagina":1,"tipo":"portada","titulo":"P065 ST_4026 1850-ASC"},{"pagina":2,"tipo":"longitudinal","titulo":"ST_4026_1850-ASC","filas":[{"ring":"SECC1","barrenos":11,"drill":null,"toneladas":null},{"ring":"SECC2","barrenos":11,"drill":82,"toneladas":412}]},{"pagina":5,"tipo":"seccion","titulo":"ST_4026_1850-ASC","seccion":"SECC1","total":78.97,"barrenos":[{"id":"3","longitud":7.33},{"id":"B1","longitud":7.73}]}]}\n'+
+  "Reglas:\n- tipo \"portada\": la página con el número de proyecto (P0xx) y el nombre del rebaje en letras grandes; pon ese texto en titulo.\n"+
+  "- tipo \"longitudinal\": la página con la tabla de columnas Ring, Holes, (Ton/m), Drill, TONNES, CU... Copia cada renglón en filas (sin el renglón Grand Total). Si la celda de TONNES está vacía, toneladas es null.\n"+
+  "- tipo \"seccion\": la hoja con \"Seccion: XXX\" y la tabla Barrenos / Distacia de tabla izquierda / Longitud / Angulo de pluma. En seccion va el nombre tal cual (SECC1, AUX2...). En barrenos copia cada renglón en el orden impreso, con el id exactamente como aparece (B1, C5, 3...) y su Longitud. En total va el número de la última fila de la columna Longitud.\n"+
+  "- Cualquier otra página (planta, imágenes, contraportada): tipo \"otro\" sin más campos.\n"+
+  "Usa como pagina el número real de página ("+a+" para la primera imagen). Copia los números exactamente como están impresos, sin redondear ni calcular. Si un número no se lee con claridad, haz tu mejor lectura.";
+}
+function npStatus(msg,pct,err){ $("npStatus").hidden=false; $("npStatus").className="npst"+(err?" err":""); $("npMsg").textContent=msg; $("npProg").style.width=(pct||0)+"%"; }
+function sampleErr(e){
+  const c=e&&e.code;
+  if(c==="not_granted") return "Se necesita tu permiso para que Claude lea el PDF. Vuelve a intentarlo y acepta el permiso.";
+  if(c==="rate_limited") return "Se alcanzó el límite de uso por ahora. Intenta de nuevo en unos minutos.";
+  if(c==="cancelled") return "Lectura cancelada.";
+  if(c==="pdfjs") return "No se pudo cargar el lector de PDF. Revisa tu conexión e inténtalo de nuevo.";
+  if(c==="invalid_json"||c==="empty_completion") return "No se pudieron interpretar algunas páginas. Intenta de nuevo.";
+  if(c==="image_rejected") return "Una de las páginas no se pudo enviar. Prueba con otro archivo.";
+  return "No se pudo leer el PDF. Intenta de nuevo.";
+}
+function openNp(){
+  if(!manager||!db) return;
+  $("npFile").value=""; $("npRead").disabled=true; $("npStatus").hidden=true; $("npStep1").hidden=false; $("npStep2").hidden=true;
+  openDlg($("npDlg"));
+}
+$("npFile").addEventListener("change",()=>{ $("npRead").disabled=!$("npFile").files.length; $("npStatus").hidden=true; });
+$("npCancel").addEventListener("click",()=>{ if(npAbort) npAbort.abort(); closeDlg($("npDlg")); });
+$("npBack").addEventListener("click",()=>{ $("npStep1").hidden=false; $("npStep2").hidden=true; $("npFile").value=""; $("npRead").disabled=true; $("npStatus").hidden=true; });
+$("npRead").addEventListener("click",async()=>{
+  const f=$("npFile").files[0]; if(!f) return;
+  npFileName=f.name;
+  try{
+    const P=JSON.parse(await f.text());
+    if(!P||!Array.isArray(P.secciones)||!P.secciones.length) throw 0;
+    npRows=P.secciones.map(x=>({s:String(x.s||"").toUpperCase(),t:(x.t==null||x.t==="")?null:+x.t,total:x.m!=null?+x.m:null,
+      holes:(x.l||[]).map((l,i)=>({id:String((x.lab&&x.lab[i+1])||(i+1)),l:+l})).filter(b=>b.l>0)}));
+    $("npProj").value=String(P.proj||"").slice(0,10); $("npName").value=String(P.name||"").slice(0,40); $("npCode").value=String(P.code||"").slice(0,40);
+    $("npStep1").hidden=true; $("npStep2").hidden=false; npRender();
+  }catch(_){ npStatus("El archivo no es un proyecto válido. Usa el archivo .json que te generó Claude a partir del PDF.",0,true); }
+});
+function num(v){ if(v==null||v==="") return null; const x=typeof v==="string"?parseFloat(v.replace(",",".")):+v; return isFinite(x)?x:null; }
+function npBuild(pages,fname){
+  pages.sort((a,b)=>(+a.pagina||0)-(+b.pagina||0));
+  const port=pages.find(p=>p.tipo==="portada"), lon=pages.find(p=>p.tipo==="longitudinal"), anyT=pages.find(p=>p.titulo&&p.tipo!=="portada");
+  const tons={}; (lon&&Array.isArray(lon.filas)?lon.filas:[]).forEach(r=>{ if(r&&r.ring) tons[String(r.ring).toUpperCase().replace(/\s+/g,"")]=num(r.toneladas); });
+  const seen=new Set(); npRows=[];
+  for(const p of pages){
+    if(p.tipo!=="seccion"||!p.seccion||!Array.isArray(p.barrenos)) continue;
+    const s=String(p.seccion).toUpperCase().replace(/\s+/g,""); if(seen.has(s)) continue; seen.add(s);
+    const holes=p.barrenos.map(b=>({id:String(b.id||"").trim(),l:num(b.longitud)})).filter(b=>b.id&&b.l>0);
+    npRows.push({s,holes,total:num(p.total),t:tons[s]!=null?tons[s]:null,page:p.pagina});
+  }
+  const tt=String((port&&port.titulo)||(anyT&&anyT.titulo)||fname.replace(/\.pdf$/i,"")).replace(/\s+/g," ").trim();
+  const pm=tt.match(/P\s*0*(\d{2,3})/i);
+  const name=tt.replace(/P\s*0*\d{2,3}/i,"").replace(/^[\s_-]+/,"").trim()||tt;
+  $("npProj").value=pm?("P"+pm[1].padStart(3,"0")):""; $("npName").value=name.replace(/_/g," ").slice(0,40); $("npCode").value=name.replace(/\s+/g,"_").slice(0,40);
+  $("npStep1").hidden=true; $("npStep2").hidden=false;
+  npRender();
+}
+function holesTxt(h){ return h.map(b=>b.id+" "+b.l.toFixed(2)).join(", "); }
+function parseHoles(txt){ return String(txt).split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean).map(x=>{ const m=x.match(/^(\S+)\s+([\d.,]+)$/); return m?{id:m[1],l:num(m[2])}:null; }).filter(b=>b&&b.l>0); }
+function npRender(){
+  let h='<div class="nprow"><span>Sección</span><span>Barrenos</span><span>Suma m</span><span>Total hoja</span><span>Toneladas</span><span>Barrenos y longitud (m)</span><span></span></div>';
+  let mT=0,tT=0,hT=0,bad=0;
+  npRows.forEach((r,i)=>{
+    const sum=r.holes.reduce((a,b)=>a+b.l,0), ok=r.total==null||Math.abs(sum-r.total)<=0.06; if(!ok) bad++;
+    mT+=r.total||sum; tT+=r.t||0; hT+=r.holes.length;
+    h+='<div class="nprow" data-i="'+i+'"><input data-f="s" value="'+esc(r.s)+'" aria-label="Sección"><span>'+r.holes.length+'</span><span class="'+(ok?"ok":"bad")+'">'+fmt(sum,2)+'</span><span>'+(r.total==null?"—":fmt(r.total,2))+'</span>'+
+      '<input data-f="t" inputmode="decimal" value="'+(r.t==null?"":r.t)+'" placeholder="Sin dato" aria-label="Toneladas de '+esc(r.s)+'">'+
+      '<input data-f="h" value="'+esc(holesTxt(r.holes))+'" aria-label="Barrenos de '+esc(r.s)+'"><button type="button" class="rm" data-rm="'+i+'" title="Quitar sección" aria-label="Quitar '+esc(r.s)+'">×</button></div>';
+  });
+  $("npTable").innerHTML=npRows.length?h:'<p class="empty" style="padding:12px">No se encontraron hojas de sección en el PDF.</p>';
+  $("npSum").textContent=npRows.length+" secciones, "+hT+" barrenos, "+fmt(mT,2)+" m y "+fmt(tT)+" t en la tabla longitudinal.";
+  const w=$("npWarn"), msgs=[];
+  if(bad) msgs.push(bad+(bad===1?" sección no cuadra":" secciones no cuadran")+" (suma de barrenos contra el total de la hoja, en rojo). Corrige las longitudes antes de agregar.");
+  const sinT=npRows.filter(r=>r.t==null).map(r=>r.s); if(sinT.length) msgs.push("Sin toneladas: "+sinT.join(", ")+". Se calcularán con el ton/m de la SECC2.");
+  w.hidden=!msgs.length; w.className="npst"+(bad?" err":""); w.textContent=msgs.join(" ");
+}
+$("npTable").addEventListener("change",e=>{
+  const row=e.target.closest(".nprow[data-i]"); if(!row) return; const r=npRows[+row.dataset.i], f=e.target.dataset.f;
+  if(f==="s") r.s=e.target.value.toUpperCase().replace(/\s+/g,"").slice(0,12);
+  else if(f==="t") r.t=e.target.value.trim()===""?null:num(e.target.value);
+  else if(f==="h") r.holes=parseHoles(e.target.value);
+  npRender();
+});
+$("npTable").addEventListener("click",e=>{ const b=e.target.closest("button[data-rm]"); if(!b) return; npRows.splice(+b.dataset.rm,1); npRender(); });
+$("npSave").addEventListener("click",async()=>{
+  if(!manager||!db) return;
+  const proj=$("npProj").value.trim().toUpperCase(), name=$("npName").value.trim(), code=($("npCode").value.trim()||name.replace(/\s+/g,"_"));
+  const w=$("npWarn");
+  const fail=m=>{ w.hidden=false; w.className="npst err"; w.textContent=m; };
+  if(!name) return fail("Escribe el nombre del proyecto.");
+  if(!npRows.length) return fail("No hay secciones para agregar.");
+  const bad=npRows.filter(r=>!r.holes.length||(r.total!=null&&Math.abs(r.holes.reduce((a,b)=>a+b.l,0)-r.total)>0.06));
+  if(bad.length) return fail("Revisa "+bad.map(r=>r.s).join(", ")+": la suma de barrenos no cuadra con el total de la hoja.");
+  const dup=npRows.map(r=>r.s).filter((s,i,a)=>a.indexOf(s)!==i); if(dup.length) return fail("Sección repetida: "+dup[0]+".");
+  if(STOPES.some(S=>S.code===code&&!isClosed(S))) return fail("Ya existe un proyecto activo con el código "+code+".");
+  const secciones=npRows.map(r=>{ const lab={}; r.holes.forEach((b,i)=>{ lab[i+1]=b.id; });
+    return {s:r.s,m:r2(r.total!=null?r.total:r.holes.reduce((a,b)=>a+b.l,0),2),t:r.t,l:r.holes.map(b=>r2(b.l,2)),lab}; });
+  const id="p"+Date.now().toString(36), now=Date.now();
+  $("npSave").disabled=true;
+  try{
+    await retry(()=>db.doc("proyectos/"+id).set({proj,name,code,secciones,creado:now,por:myName||"",uid:uid||null,archivo:npFileName.slice(0,120)}));
+    await retry(()=>db.collection("bitacora").add({ts:now,rebaje:id,rebajeCodigo:code,fecha:opDate(),turno:"",supervisor:myName||"",uid:uid||null,actividad:"N",items:[],barrenos:secciones.reduce((a,s)=>a+s.l.length,0),metros:r2(secciones.reduce((a,s)=>a+s.m,0),2),ton:0,comentario:"Agregado desde "+npFileName.slice(0,120)}));
+    closeDlg($("npDlg")); toast(name+" agregado"); pendingOpen=id;
+  }catch(err){ fail(saveError(err)); }
+  $("npSave").disabled=false;
+});
+let pendingOpen=null;
+
+/* ---------- Reporte gerencial PDF ---------- */
+let dlFn=null;
+async function getPdfWriter(){
+  if(window.PDFLib) return window.PDFLib;
+  try{ await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"); }
+  catch(_){ await loadScript("https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"); }
+  if(!window.PDFLib) throw {code:"pdflib"};
+  return window.PDFLib;
+}
+const pdfTxt=s=>String(s==null?"":s).replace(/\u2248/g,"~").replace(/[^\x20-\x7E\xA0-\xFF\u2013\u2014\u2018\u2019\u201C\u201D\u2022]/g,"");
+async function buildReport(){
+  const {PDFDocument,StandardFonts,rgb}=await getPdfWriter();
+  const doc=await PDFDocument.create();
+  doc.setTitle("Reporte gerencial de barrenación larga"); doc.setAuthor(myName||""); doc.setCreator("Control de barrenación larga");
+  const F=await doc.embedFont(StandardFonts.Helvetica), FB=await doc.embedFont(StandardFonts.HelveticaBold);
+  const W=792,H=612,M=36;
+  const C={or:rgb(.94,.46,.02),ord:rgb(.78,.37,0),ink:rgb(.16,.18,.2),mut:rgb(.36,.40,.38),line:rgb(.85,.87,.86),bg:rgb(.96,.97,.96),lt:rgb(.99,.94,.89),
+    P:rgb(.76,.21,.17),B:rgb(.17,.51,.28),T:rgb(.16,.37,.75),X:rgb(.75,.78,.77)};
+  const now=new Date(), mes=ymd(now).slice(0,7), stamp=dmy(ymd(now))+" "+hhmm(now.getTime());
+  const pages=[]; let p=null, y=0;
+  const tw=(s,sz,f)=>(f||F).widthOfTextAtSize(pdfTxt(s),sz);
+  function T(s,x,yy,sz,o){ o=o||{}; const f=o.b?FB:F, t=pdfTxt(s); let xx=x; if(o.al==="r") xx=x-f.widthOfTextAtSize(t,sz); else if(o.al==="c") xx=x-f.widthOfTextAtSize(t,sz)/2; p.drawText(t,{x:xx,y:yy,size:sz,font:f,color:o.c||C.ink}); }
+  function fit(s,sz,w,f){ s=pdfTxt(s); f=f||F; if(f.widthOfTextAtSize(s,sz)<=w) return s; while(s.length>1&&f.widthOfTextAtSize(s+"...",sz)>w) s=s.slice(0,-1); return s+"..."; }
+  function R(x,yy,w,h,col,bc){ p.drawRectangle({x,y:yy,width:w,height:h,color:col,borderColor:bc,borderWidth:bc?0.6:0}); }
+  function bar(x,yy,w,h,parts){ R(x,yy,w,h,C.P); let xx=x; for(const [v,col] of parts){ const ww=Math.max(0,Math.min(w-(xx-x),w*v)); if(ww>0){ R(xx,yy,ww,h,col); xx+=ww; } } }
+  function page(title,sub){
+    p=doc.addPage([W,H]); pages.push(p);
+    R(0,H-6,W,6,C.or);
+    T(title,M,H-M-14,17,{b:true});
+    if(sub) T(sub,M,H-M-30,9.5,{c:C.mut});
+    T("Reporte gerencial de barrenación larga",W-M,H-M-14,9,{al:"r",c:C.ord,b:true});
+    T("Generado el "+stamp+(myName?" por "+myName:""),W-M,H-M-27,8.5,{al:"r",c:C.mut});
+    p.drawLine({start:{x:M,y:H-M-40},end:{x:W-M,y:H-M-40},thickness:1.2,color:C.or});
+    y=H-M-58;
+  }
+  function need(h,title,sub,hdr){ if(y-h<M+24){ page(title,sub); if(hdr) hdr(); } }
+  function table(cols,rows,opt){
+    opt=opt||{}; const rh=opt.rh||17, x0=M;
+    const head=()=>{ R(x0,y-rh+4,W-2*M,rh,C.bg); let x=x0+6; for(const c of cols){ T(c.h,c.al==="r"?x+c.w-6:x,y-rh/2+1,7.6,{b:true,c:C.mut,al:c.al}); x+=c.w; } y-=rh; };
+    head();
+    for(const r of rows){
+      need(rh,opt.title,opt.sub,head);
+      let x=x0+6;
+      if(r.__tot) R(x0,y-rh+4,W-2*M,rh,C.lt);
+      for(const c of cols){ const v=r[c.k];
+        if(typeof v==="function") v(x,y-rh+4,c.w);
+        else T(fit(v,8.4,c.w-8,r.__tot||c.b?FB:F),c.al==="r"?x+c.w-6:x,y-rh/2+1,8.4,{al:c.al,b:!!(r.__tot||c.b)});
+        x+=c.w; }
+      p.drawLine({start:{x:x0,y:y-rh+4},end:{x:W-M,y:y-rh+4},thickness:.4,color:C.line});
+      y-=rh;
+    }
+    y-=10;
+  }
+  function h2(s){ need(40); T(s,M,y,12,{b:true}); y-=12; }
+
+  const act=activeStopes();
+  const data=act.map(S=>{ const Mx=metrics(S), L=logs.filter(e=>logStope(e)===S.id&&["B","T","P"].includes(e.actividad));
+    const last=L.reduce((a,e)=>Math.max(a,e.ts||0),0); return {S,M:Mx,last}; });
+  const tot=data.reduce((a,d)=>{ a.mB+=d.M.mB; a.mA+=d.M.mA; a.mT+=d.M.mT; a.mP+=d.M.mP; a.totM+=d.S.totM; a.hB+=d.M.hB; a.hT+=d.M.hT; a.totH+=d.S.totH; a.tB+=d.M.tB; a.tT+=d.M.tT; a.totT+=d.S.totT; return a; },{mB:0,mA:0,mT:0,tT:0,mP:0,totM:0,hB:0,hT:0,totH:0,tB:0,totT:0});
+
+  /* Página 1: resumen */
+  page("Estado general de proyectos",act.length+(act.length===1?" proyecto activo":" proyectos activos")+", corte al "+dmy(ymd(now)));
+  const k=[["Avance general",fmt(tot.totM?tot.mA/tot.totM*100:0,1)+" %","barrenado y tumbado",C.or],["Metros barrenados",fmt(tot.mB,1)+" m","sin tumbar",C.B],["Metros por barrenar",fmt(tot.mP,1)+" m","de "+fmt(tot.totM,1)+" m",C.P],
+           ["Barrenos listos",fmt(tot.hB),"sin tumbar",C.B],["Barrenos tumbados",fmt(tot.hT),"de "+fmt(tot.totH)+" barrenos",C.T],["Ton. barrenadas",fmt(tot.tB)+" t","sin tumbar",C.ink],["Ton. tumbadas",fmt(tot.tT)+" t","de "+fmt(tot.totT)+" t",C.T]];
+  const kw=(W-2*M-6*8)/7;
+  k.forEach((q,i)=>{ const x=M+i*(kw+8); R(x,y-52,kw,56,rgb(1,1,1),C.line); R(x,y+1,kw,3,q[3]);
+    T(q[0],x+8,y-10,8,{c:C.mut}); T(q[1],x+8,y-30,15,{b:true}); if(q[2]) T(q[2],x+8,y-44,7.5,{c:C.mut}); });
+  y-=70;
+  T("Avance en metros:",M,y,8,{c:C.mut}); bar(M+80,y-2,W-2*M-80,9,[[tot.totM?tot.mT/tot.totM:0,C.T],[tot.totM?tot.mB/tot.totM:0,C.B]]); y-=22;
+
+  h2("Estado por proyecto");
+  const cols=[{h:"Proyecto",k:"p",w:44},{h:"Rebaje",k:"n",w:112},{h:"Avance",k:"bar",w:122},{h:"m barrenados",k:"mb",w:64,al:"r"},{h:"m por barrenar",k:"mp",w:68,al:"r"},
+    {h:"Barrenos listos",k:"hb",w:66,al:"r"},{h:"Tumbados",k:"ht",w:50,al:"r"},{h:"t barrenadas",k:"tb",w:60,al:"r"},{h:"t tumbadas",k:"tt",w:60,al:"r"},{h:"Último registro",k:"lr",w:74,al:"r"}];
+  const rows=data.map(d=>{ const pc=d.S.totM?d.M.mA/d.S.totM:0, pt=d.S.totM?d.M.mT/d.S.totM:0;
+    return {p:d.S.proj,n:d.S.name,bar:(x,yy,w)=>{ bar(x,yy+4,w-44,8,[[pt,C.T],[pc-pt,C.B]]); T(fmt(pc*100,1)+" %",x+w-6,yy+5,8.4,{al:"r",b:true}); },
+      mb:fmt(d.M.mB,1),mp:fmt(d.M.mP,1),hb:fmt(d.M.hB),ht:fmt(d.M.hT),tb:fmt(d.M.tB),tt:fmt(d.M.tT),lr:d.last?dmy(ymd(new Date(d.last))):"Sin registros"}; });
+  rows.push({__tot:1,p:"",n:"Total",bar:(x,yy,w)=>{ const pc=tot.totM?tot.mA/tot.totM:0, pt=tot.totM?tot.mT/tot.totM:0; bar(x,yy+4,w-44,8,[[pt,C.T],[pc-pt,C.B]]); T(fmt(pc*100,1)+" %",x+w-6,yy+5,8.4,{al:"r",b:true}); },
+    mb:fmt(tot.mB,1),mp:fmt(tot.mP,1),hb:fmt(tot.hB),ht:fmt(tot.hT),tb:fmt(tot.tB),tt:fmt(tot.tT),lr:""});
+  table(cols,rows,{title:"Estado general de proyectos",rh:19});
+  need(14); T("Colores de avance: verde barrenado, azul tumbado, rojo falta por barrenar.",M,y,7.5,{c:C.mut}); y-=18;
+
+  /* Avance del mes y por equipo */
+  const ml=logs.filter(e=>typeof e.fecha==="string"&&e.fecha.slice(0,7)===mes);
+  const by=avanceMes(ml.filter(e=>["B","T","P"].includes(e.actividad)));
+  const ids=STOPES.map(S=>S.id).filter(id=>by[id]);
+  need(60); h2("Avance registrado en "+mesTxt(mes));
+  if(!ids.length){ T("Sin avances registrados en el mes.",M,y-4,9,{c:C.mut}); y-=22; }
+  else{ let a={m:0,t:0,ht:0,n:0};
+    const r2s=ids.map(id=>{ const x=by[id]; a.m+=x.m; a.t+=x.t; a.ht+=x.ht; a.n+=x.n; return {p:SBY[id].proj,n:SBY[id].name+(isClosed(SBY[id])?" ("+ZEST[zonas[id].estatus].toLowerCase()+")":""),m:fmt(x.m,1),t:fmt(x.t),ht:fmt(x.ht),r:fmt(x.n)}; });
+    r2s.push({__tot:1,p:"",n:"Total del mes",m:fmt(a.m,1),t:fmt(a.t),ht:fmt(a.ht),r:fmt(a.n)});
+    table([{h:"Proyecto",k:"p",w:60},{h:"Rebaje",k:"n",w:250},{h:"Metros barrenados",k:"m",w:110,al:"r"},{h:"Toneladas",k:"t",w:100,al:"r"},{h:"Barrenos tumbados",k:"ht",w:100,al:"r"},{h:"Registros",k:"r",w:100,al:"r"}],r2s,{title:"Estado general de proyectos"});
+  }
+  const eq={}; ml.filter(e=>e.actividad==="B").forEach(e=>{ const q=e.equipo||"Sin equipo"; const x=eq[q]||(eq[q]={m:0,t:0,b:0,n:0}); x.m+=+e.metros||0; x.t+=+e.ton||0; x.b+=+e.barrenos||0; x.n++; });
+  const eqs=Object.keys(eq).sort((a,b)=>eq[b].m-eq[a].m);
+  if(eqs.length){ need(60); h2("Metros barrenados por equipo en "+mesTxt(mes));
+    table([{h:"Equipo",k:"q",w:160},{h:"Metros barrenados",k:"m",w:120,al:"r"},{h:"Toneladas",k:"t",w:110,al:"r"},{h:"Barrenos",k:"b",w:100,al:"r"},{h:"Registros",k:"n",w:100,al:"r"}],
+      eqs.map(q=>({q,m:fmt(eq[q].m,1),t:fmt(eq[q].t),b:fmt(eq[q].b),n:fmt(eq[q].n)})),{title:"Estado general de proyectos"}); }
+  const cz=Object.entries(zonas).filter(([id,z])=>SBY[id]&&ZEST[z.estatus]&&z.mes===mes);
+  if(cz.length){ need(60); h2("Proyectos enviados al historial en "+mesTxt(mes));
+    table([{h:"Proyecto",k:"p",w:60},{h:"Rebaje",k:"n",w:200},{h:"Estatus",k:"e",w:80},{h:"Fecha",k:"f",w:70},{h:"Por",k:"por",w:130},{h:"Avance final",k:"a",w:150,al:"r"}],
+      cz.map(([id,z])=>({p:SBY[id].proj,n:SBY[id].name,e:ZEST[z.estatus],f:z.fecha?dmy(ymd(new Date(z.fecha))):"",por:z.por||"",a:z.resumen?fmt(+z.resumen.mB||0,1)+" m ("+fmt(+z.resumen.pct||0,1)+" %)":""})),{title:"Estado general de proyectos"}); }
+
+  /* Una página por proyecto */
+  for(const d of data){
+    const S=d.S, Mx=d.M, pc=S.totM?Mx.mA/S.totM*100:0;
+    page(S.proj+"  "+S.name,"Avance "+fmt(pc,1)+" % de "+fmt(S.totM,1)+" m. Barrenado sin tumbar: "+fmt(Mx.mB,1)+" m, "+Mx.hB+" barrenos, "+fmt(Mx.tB)+" t. Tumbado: "+fmt(Mx.mT,1)+" m, "+Mx.hT+" barrenos, "+fmt(Mx.tT)+" t.");
+    bar(M,y-2,W-2*M,9,[[S.totM?Mx.mT/S.totM:0,C.T],[S.totM?Mx.mB/S.totM:0,C.B]]); y-=22;
+    const sc=[{h:"Sección",k:"s",w:58,b:true},{h:"Barrenos (estado)",k:"g",w:150},{h:"Barrenados",k:"b",w:62,al:"r"},{h:"Tumbados",k:"t",w:56,al:"r"},{h:"Por barrenar",k:"p",w:66,al:"r"},
+      {h:"Metros",k:"m",w:60,al:"r"},{h:"m barrenados",k:"mb",w:70,al:"r"},{h:"Toneladas",k:"tt",w:66,al:"r"},{h:"t barrenadas",k:"tb",w:70,al:"r"},{h:"t tumbadas",k:"ttm",w:60,al:"r"}];
+    const srows=S.rows.map(r=>{ const x=Mx.sec[r.s]; let nb=0,nt=0,np=0; r.holes.forEach(o=>{ const s=st(S,r.s,o.n); if(s==="B")nb++; else if(s==="T")nt++; else if(s==="P")np++; });
+      return {s:r.s.replace("SECC","SECC "),g:(x0,yy,w)=>{ const n=r.holes.length, sz=Math.min(9,(w-10)/n-1.5); r.holes.forEach((o,i)=>{ const s=st(S,r.s,o.n); R(x0+i*(sz+1.5),yy+4,sz,9,C[s]||C.X); }); },
+        b:fmt(nb),t:fmt(nt),p:fmt(np),m:fmt(r.m,1),mb:fmt(x.mB,1),tt:fmt(r.t||0),tb:fmt(x.tB),ttm:fmt(x.tT)}; });
+    srows.push({__tot:1,s:"Total",g:"",b:fmt(Mx.hB),t:fmt(Mx.hT),p:fmt(Mx.hP),m:fmt(S.totM,1),mb:fmt(Mx.mB,1),tt:fmt(S.totT),tb:fmt(Mx.tB),ttm:fmt(Mx.tT)});
+    table(sc,srows,{title:S.proj+"  "+S.name,sub:"Continuación",rh:17});
+    need(14); T("Cuadros: verde barrenado, azul tumbado, rojo falta por barrenar.",M,y,7.5,{c:C.mut}); y-=18;
+    const L=logs.filter(e=>logStope(e)===S.id&&["B","T","P"].includes(e.actividad)).slice(0,8);
+    if(L.length){ need(60); h2("Últimos registros");
+      table([{h:"Fecha",k:"f",w:80},{h:"Registró",k:"q",w:150},{h:"Actividad",k:"a",w:150},{h:"Equipo",k:"e",w:70},{h:"Barrenos",k:"b",w:60,al:"r"},{h:"Metros",k:"m",w:70,al:"r"},{h:"Toneladas",k:"t",w:70,al:"r"}],
+        L.map(e=>({f:dmy(e.fecha)+(TURNO[e.turno]?" "+e.turno:""),q:e.supervisor||"",a:ACT[e.actividad]||"",e:e.equipo||"",b:fmt(+e.barrenos||0),m:fmt(+e.metros||0,1),t:fmt(+e.ton||0)})),{title:S.proj+"  "+S.name,sub:"Continuación"}); }
+  }
+  pages.forEach((pg,i)=>{ pg.drawText(pdfTxt("Página "+(i+1)+" de "+pages.length),{x:W-M-F.widthOfTextAtSize("Página "+(i+1)+" de "+pages.length,8),y:M-14,size:8,font:F,color:C.mut});
+    pg.drawText(pdfTxt("Control de barrenación larga"),{x:M,y:M-14,size:8,font:F,color:C.mut}); });
+  return await doc.save();
+}
+$("rptBtn").addEventListener("click",async()=>{
+  const b=$("rptBtn"); if(b.disabled) return;
+  if(!loaded){ toast("Espera a que cargue el estado de los proyectos."); return; }
+  b.disabled=true; const old=b.textContent; b.textContent="Generando…";
+  try{
+    const bytes=await buildReport(), name="Reporte barrenacion "+ymd(new Date())+".pdf";
+    const blob=new Blob([bytes],{type:"application/pdf"});
+    if(dlFn){ await dlFn.save({filename:name,data:blob}); toast("Reporte listo"); }
+    else{ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },4000); toast("Reporte descargado"); }
+  }catch(e){ const c=e&&e.code; try{ console.warn("Reporte:",c||e); }catch(_){}
+    toast(c==="declined"?"Descarga cancelada.":c==="pdflib"?"No se pudo cargar el generador de PDF. Revisa tu conexión.":"No se pudo generar el reporte. Intenta de nuevo."); }
+  b.disabled=false; b.textContent=old;
+});
+
+/* ---------- Secciones plegables ---------- */
+function setFold(el,closed){ el.classList.toggle("closed",closed); el.querySelector(".foldbtn").setAttribute("aria-expanded",String(!closed)); lsSet("fold_"+el.id,closed?"1":"0"); }
+["foldDash","foldLog","foldHist"].forEach(id=>{
+  const el=$(id), v=lsGet("fold_"+id);
+  setFold(el,v===null?id!=="foldDash":v==="1");
+  el.addEventListener("click",e=>{
+    if(mq.matches) return;
+    const closed=el.classList.contains("closed");
+    if(closed){ setFold(el,false); return; }
+    if(e.target.closest(".loghead")&&!e.target.closest(".filt")) setFold(el,true);
+  });
+});
+
+/* ---------- Base de datos (Firebase Firestore) ---------- */
+function mapErr(e){
+  const c=e&&e.code;
+  if(c==="not-found") return {code:"invalid_argument",message:e.message};
+  if(c==="resource-exhausted") return {code:"quota_exceeded",message:e.message};
+  if(c==="permission-denied") return {code:"denied",message:e.message};
+  if(c==="unavailable"||c==="deadline-exceeded") return {code:"unavailable",message:e.message};
+  return e;
+}
+function flat(o){ const r={}; for(const k in o){ const v=o[k]; if(v&&typeof v==="object"&&!Array.isArray(v)&&k==="h"){ for(const n in v) r[k+"."+n]=v[n]; } else r[k]=v; } return r; }
+function makeDb(fs){
+  const wrapDoc=ref=>({
+    get:()=>ref.get().catch(e=>{ throw mapErr(e); }),
+    set:d=>ref.set(d).catch(e=>{ throw mapErr(e); }),
+    update:d=>ref.update(flat(d)).catch(e=>{ throw mapErr(e); }),
+    delete:()=>ref.delete().catch(e=>{ throw mapErr(e); })
+  });
+  return {
+    doc:p=>wrapDoc(fs.doc(p)),
+    collection:p=>{ const c=fs.collection(p); return {
+      add:d=>c.add(d).catch(e=>{ throw mapErr(e); }),
+      onSnapshot:(n,er)=>c.onSnapshot({includeMetadataChanges:false},n,er),
+      orderBy:(f,dir)=>({limit:l=>({onSnapshot:(n,er)=>c.orderBy(f,dir).limit(l).onSnapshot(n,er)})}),
+      get:()=>c.get()
+    }; },
+    raw:fs
+  };
+}
+
+/* ---------- Modo editor (clave) ---------- */
+async function sha(s){ const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
+async function checkEditor(){ const h=(window.BARR_CONFIG||{}).editorKeyHash, k=lsGet("barr_editor"); if(!h||!k) return false; try{ return (await sha(k))===h; }catch(_){ return false; } }
+function renderEditor(){
+  const b=$("edBtn"); b.classList.toggle("on",manager); b.title=manager?"Modo editor activo":"Entrar como editor";
+  $("edLbl").textContent=manager?"Editor":"Editor";
+}
+$("edBtn").addEventListener("click",()=>{
+  $("ekErr").textContent=""; $("ekIn").value="";
+  $("ekLogin").hidden=manager; $("ekTools").hidden=!manager; $("ekMig").textContent="";
+  openDlg($("ekDlg")); if(!manager) setTimeout(()=>{ try{ $("ekIn").focus(); }catch(_){} },50);
+});
+$("ekForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  if(manager) return closeDlg($("ekDlg"));
+  const k=$("ekIn").value.trim(), h=(window.BARR_CONFIG||{}).editorKeyHash;
+  if(!k){ $("ekErr").textContent="Escribe la clave."; return; }
+  let ok=false; try{ ok=!!h&&(await sha(k))===h; }catch(_){}
+  if(!ok){ $("ekErr").textContent="Clave incorrecta."; return; }
+  lsSet("barr_editor",k); manager=true; closeDlg($("ekDlg")); toast("Modo editor activo");
+  renderEditor(); renderAll(); renderHist();
+});
+$("ekOut").addEventListener("click",()=>{
+  try{ localStorage.removeItem("barr_editor"); }catch(_){}
+  manager=false; closeDlg($("ekDlg")); toast("Saliste del modo editor"); renderEditor(); renderAll(); renderHist();
+});
+$("ekImport").addEventListener("click",async()=>{
+  if(!manager||!db) return;
+  const m=$("ekMig"), b=$("ekImport");
+  b.disabled=true; m.textContent="Revisando…";
+  try{
+    const prev=await db.raw.collection("bitacora").limit(1).get();
+    if(!prev.empty&&!confirm("La base ya tiene registros. ¿Agregar de todos modos los datos de la versión anterior? Los documentos con el mismo nombre se reemplazan.")){ m.textContent="Cancelado."; b.disabled=false; return; }
+    const r=await fetch("datos_migracion.json",{cache:"no-store"}); if(!r.ok) throw 0;
+    const D=await r.json(); let n=0, batch=db.raw.batch(), inb=0;
+    for(const c of ["proyectos","zonas","estado","bitacora"]) for(const x of (D[c]||[])){
+      batch.set(db.raw.collection(c).doc(String(x.id)),x.data); n++; inb++;
+      if(inb>=400){ await batch.commit(); batch=db.raw.batch(); inb=0; m.textContent="Importando… "+n; }
+    }
+    if(inb) await batch.commit();
+    m.textContent="Listo: "+n+" documentos importados.";
+  }catch(e){ m.textContent="No se pudo importar. Revisa tu conexión y que datos_migracion.json esté en el sitio."; }
+  b.disabled=false;
+});
+
+/* ---------- Inicio ---------- */
+function goLocal(){ loaded=true; setSync("local","Sin guardar"); renderAll(); renderLog(); renderToday(); renderHist(); }
+async function init(){
+  $("hMes").value=ymd(new Date()).slice(0,7);
+  renderEq(); resetForm(); renderHead(); renderSecOptions(); renderWho(); renderAll(); renderLog(); renderToday(); renderHist();
+  openGate();
+  showTab();
+  const CFG=window.BARR_CONFIG||{}, FC=CFG.firebase||{};
+  if(!window.firebase||!FC.apiKey||/PEGA/i.test(FC.apiKey)){ setSync("error","Falta configurar Firebase"); goLocal(); return; }
+  try{
+    firebase.initializeApp(FC);
+    const fs=firebase.firestore();
+    try{ await fs.enablePersistence({synchronizeTabs:true}); }catch(_){}
+    db=makeDb(fs);
+  }catch(e){ try{ console.warn("Firebase:",e); }catch(_){} setSync("error","Sin conexión"); goLocal(); return; }
+  manager=await checkEditor();
+  renderWho(); renderEq(); renderEditor();
+  const net=()=>setSync(navigator.onLine?"online":"error",navigator.onLine?"En línea":"Sin señal, se guarda al reconectar");
+  net(); window.addEventListener("online",net); window.addEventListener("offline",net);
+  db.collection("proyectos").onSnapshot(snap=>{
+    rebuildStopes(snap.docs.map(d=>Object.assign({},d.data()||{},{_id:d.id})));
+    if(pendingOpen&&SBY[pendingOpen]){ const id=pendingOpen; pendingOpen=null; viewClosed=false; switchStope(id); }
+    else if(savedId&&SBY[savedId]&&cur.id!==savedId&&!isClosed(SBY[savedId])&&!switchedOnce){ switchStope(savedId); }
+    switchedOnce=true;
+    renderHead(); renderSecOptions(); renderAll(); renderLog(); renderToday(); renderHist();
+  },()=>{});
+  db.collection("zonas").onSnapshot(snap=>{
+    const nz={}; snap.docs.forEach(d=>{ const v=d.data(); if(v&&typeof v==="object") nz[d.id]=v; });
+    zonas=nz; zonasOk=true; ensureActive(); renderAll(); renderHist();
+  },()=>{});
+  db.collection("estado").onSnapshot(snap=>{
+    const ns={}, nd=new Set();
+    snap.docs.forEach(d=>{ const v=d.data()||{}, [sid,s]=parseDoc(d.id); (ns[sid]||(ns[sid]={}))[s]=(v.h&&typeof v.h==="object")?v.h:{}; nd.add(d.id); });
+    state=ns; docs=nd;
+    if(!snap.metadata.fromCache||snap.size) loaded=true;
+    renderAll();
+  },()=>{ setSync("error","Sin conexión"); });
+  db.collection("bitacora").orderBy("ts","desc").limit(1000).onSnapshot(snap=>{
+    logs=snap.docs.map(d=>Object.assign({},d.data()||{},{_id:d.id}));
+    renderLog(); renderToday(); renderHist(); renderDash();
+  },()=>{});
+}
+init();
+})();
+
+</script>
+</body>
+</html>
